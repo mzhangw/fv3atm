@@ -702,6 +702,9 @@ module GFS_typedefs
     !--- GFDL microphysical paramters
     logical              :: lgfdlmprad      !< flag for GFDL mp scheme and radiation consistency 
 
+    !--- Thompson,GFDL mp parameter
+    logical              :: lrefres          !< flag for radar reflectivity in restart file
+
     !--- land/surface model parameters
     integer              :: lsm             !< flag for land surface model lsm=1 for noah lsm
     integer              :: lsm_noah=1      !< flag for NOAH land surface model
@@ -712,6 +715,7 @@ module GFS_typedefs
     integer              :: lsoil_lsm       !< number of soil layers internal to land surface model
     integer              :: lsnow_lsm       !< maximum number of snow layers internal to land surface model
     integer              :: lsnow_lsm_lbound!< lower bound for snow arrays, depending on lsnow_lsm
+    logical              :: rdlai
 #endif
     integer              :: ivegsrc         !< ivegsrc = 0   => USGS, 
                                             !< ivegsrc = 1   => IGBP (20 category)
@@ -2321,6 +2325,11 @@ module GFS_typedefs
        Sfcprop%tsnow       = clear_val
        Sfcprop%snowfallac  = clear_val
        Sfcprop%acsnow      = clear_val
+       !
+       if (Model%rdlai) then
+          allocate (Sfcprop%xlaixy (IM))
+          Sfcprop%xlaixy = clear_val
+       end if
     end if
     if (Model%do_mynnsfclay) then
     ! For MYNN surface layer scheme
@@ -2790,12 +2799,16 @@ module GFS_typedefs
     !--- GFDL microphysical parameters
     logical              :: lgfdlmprad     = .false.            !< flag for GFDLMP radiation interaction 
 
+    !--- Thompson,GFDL microphysical parameter
+    logical              :: lrefres        = .false.            !< flag for radar reflectivity in restart file
+
     !--- land/surface model parameters
     integer              :: lsm            =  1              !< flag for land surface model to use =0  for osu lsm; =1  for noah lsm; =2  for noah mp lsm; =3  for RUC lsm
     integer              :: lsoil          =  4              !< number of soil layers
 #ifdef CCPP
     integer              :: lsoil_lsm      =  -1             !< number of soil layers internal to land surface model; -1 use lsoil
     integer              :: lsnow_lsm      =  3              !< maximum number of snow layers internal to land surface model
+    logical              :: rdlai          = .false.
 #endif
     integer              :: ivegsrc        =  2              !< ivegsrc = 0   => USGS,
                                                              !< ivegsrc = 1   => IGBP (20 category)
@@ -3073,12 +3086,13 @@ module GFS_typedefs
                                mg_do_graupel, mg_do_hail, mg_nccons, mg_nicons, mg_ngcons,  &
                                mg_ncnst, mg_ninst, mg_ngnst, sed_supersat, do_sb_physics,   &
                                mg_alf,   mg_qcmin, mg_do_ice_gmao, mg_do_liq_liu,           &
-                               ltaerosol, lradar, ttendlim, lgfdlmprad,                     &
+                               ltaerosol, lradar, lrefres, ttendlim, lgfdlmprad,            &
                           !--- max hourly
                                avg_max_length,                                              &
                           !--- land/surface model control
 #ifdef CCPP
-                               lsm, lsoil, lsoil_lsm, lsnow_lsm, nmtvr, ivegsrc, use_ufo,   &
+                               lsm, lsoil, lsoil_lsm, lsnow_lsm, rdlai,                     &
+                               nmtvr, ivegsrc, use_ufo,                                     &
 #else
                                lsm, lsoil, nmtvr, ivegsrc, use_ufo,                         &
 #endif
@@ -3372,6 +3386,8 @@ module GFS_typedefs
 
 !--- gfdl  MP parameters
     Model%lgfdlmprad       = lgfdlmprad
+!--- Thompson,GFDL MP parameter
+    Model%lrefres          = lrefres
 
 !--- land/surface model parameters
     Model%lsm              = lsm
@@ -3380,6 +3396,12 @@ module GFS_typedefs
     ! Consistency check for RUC LSM
     if (Model%lsm == Model%lsm_ruc .and. Model%nscyc>0) then
       write(0,*) 'Logic error: RUC LSM cannot be used with surface data cycling at this point (fhcyc>0)'
+      stop
+    end if
+    ! Flag to read leaf area index from input files (initial conditions)
+    Model%rdlai = rdlai
+    if (Model%rdlai .and. .not. Model%lsm == Model%lsm_ruc) then
+      write(0,*) 'Logic error: rdlai = .true. only works with RUC LSM'
       stop
     end if
     ! Set surface layers for CCPP physics
@@ -3834,7 +3856,7 @@ module GFS_typedefs
                                             ' Boundary layer and Shallow Convection',          &
                                             ' nshoc_3d=',Model%nshoc_3d,                       &
                                             ' nshoc_2d=',Model%nshoc_2d,                       &
-                                            ' ntke=',Model%ntke,'shoc_parm=',shoc_parm  
+                                            ' ntke=',Model%ntke,' shoc_parm=',shoc_parm
     endif
 
 #ifdef CCPP
@@ -4406,6 +4428,7 @@ module GFS_typedefs
         print *, ' Thompson microphysical parameters'
         print *, ' ltaerosol         : ', Model%ltaerosol
         print *, ' lradar            : ', Model%lradar
+        print *, ' lrefres           : ', Model%lrefres
         print *, ' ttendlim          : ', Model%ttendlim
         print *, ' '
       endif
@@ -4423,6 +4446,7 @@ module GFS_typedefs
       if (Model%imp_physics == Model%imp_physics_gfdl) then
         print *, ' GFDL microphysical parameters'
         print *, ' GFDL MP radiation inter: ', Model%lgfdlmprad
+        print *, ' lrefres                : ', Model%lrefres
         print *, ' '
       endif
 #ifdef CCPP
@@ -4437,6 +4461,7 @@ module GFS_typedefs
       print *, ' lsm               : ', Model%lsm
       print *, ' lsoil             : ', Model%lsoil
 #ifdef CCPP
+      print *, ' rdlai             : ', Model%rdlai
       print *, ' lsoil_lsm         : ', Model%lsoil_lsm
       print *, ' lsnow_lsm         : ', Model%lsnow_lsm
 #endif
@@ -4867,7 +4892,7 @@ module GFS_typedefs
        Tbd%snowprv    = clear_val
        Tbd%graupelprv = clear_val
     end if
-    
+
     if (Model%lsm == Model%lsm_noahmp) then
         allocate(Tbd%draincprv  (IM))
         allocate(Tbd%drainncprv (IM))
@@ -4902,7 +4927,7 @@ module GFS_typedefs
        Tbd%qsq           = clear_val
        Tbd%cov           = clear_val
     end if
-    
+
     ! MYJ variables
     if (Model%do_myjsfc.or.Model%do_myjpbl) then
        !print*,"Allocating all MYJ surface variables:"
@@ -6033,7 +6058,6 @@ module GFS_typedefs
       Interstitial%nncl = 5
     endif
 
-
     if (Model%imp_physics == Model%imp_physics_mg) then
       if (abs(Model%fprcp) == 1) then
         Interstitial%nncl = 4                          ! MG2 with rain and snow
@@ -6185,8 +6209,7 @@ module GFS_typedefs
     Interstitial%tsfg         = clear_val
 
 ! F-A scheme
-    !if (Model%imp_physics == Model%imp_physics_fer_hires) then
-    if (Model%imp_physics == Model%imp_physics_fer_hires ) then 
+    if (Model%imp_physics == Model%imp_physics_fer_hires) then
          Interstitial%qv_r       = clear_val
          Interstitial%qc_r       = clear_val
          Interstitial%qi_r       = clear_val
@@ -6768,17 +6791,17 @@ module GFS_typedefs
     ! Print arrays that are conditional on physics choices
     if (Model%imp_physics == Model%imp_physics_gfdl .or. Model%imp_physics == Model%imp_physics_thompson) then
        write (0,*) 'Interstitial_print: values specific to GFDL/Thompson microphysics'
-       write (0,*) 'sum(Interstitial%graupelmp) = ', sum(Interstitial%graupelmp   )
-       write (0,*) 'sum(Interstitial%icemp    ) = ', sum(Interstitial%icemp       )
-       write (0,*) 'sum(Interstitial%rainmp   ) = ', sum(Interstitial%rainmp      )
-       write (0,*) 'sum(Interstitial%snowmp   ) = ', sum(Interstitial%snowmp      )
+       write (0,*) 'sum(Interstitial%graupelmp    ) = ', sum(Interstitial%graupelmp       )
+       write (0,*) 'sum(Interstitial%icemp        ) = ', sum(Interstitial%icemp           )
+       write (0,*) 'sum(Interstitial%rainmp       ) = ', sum(Interstitial%rainmp          )
+       write (0,*) 'sum(Interstitial%snowmp       ) = ', sum(Interstitial%snowmp          )
     !F-A scheme
     else if (Model%imp_physics == Model%imp_physics_fer_hires) then
        write (0,*) 'Interstitial_print: values specific to F-A microphysics'
-       write (0,*) 'sum(Interstitial%f_ice     ) = ', sum(Interstitial%f_ice      )
-       write (0,*) 'sum(Interstitial%f_rain    ) = ', sum(Interstitial%f_rain     )
-       write (0,*) 'sum(Interstitial%f_rimef   ) = ', sum(Interstitial%f_rimef    )
-       write (0,*) 'sum(Interstitial%cwm       ) = ', sum(Interstitial%cwm        )
+       write (0,*) 'sum(Interstitial%f_ice        ) = ', sum(Interstitial%f_ice           )
+       write (0,*) 'sum(Interstitial%f_rain       ) = ', sum(Interstitial%f_rain          )
+       write (0,*) 'sum(Interstitial%f_rimef      ) = ', sum(Interstitial%f_rimef         )
+       write (0,*) 'sum(Interstitial%cwm          ) = ', sum(Interstitial%cwm             )
     else if (Model%imp_physics == Model%imp_physics_mg) then
        write (0,*) 'Interstitial_print: values specific to MG microphysics'
        write (0,*) 'sum(Interstitial%ncgl         ) = ', sum(Interstitial%ncgl            )
@@ -6808,8 +6831,8 @@ module GFS_typedefs
        write (0,*) 'sum(Interstitial%ncpl         ) = ', sum(Interstitial%ncpl            )
     end if
     if (Model%lsm == Model%lsm_noahmp) then
-       write (0,*) 'sum(Interstitial%t2mmp    ) = ', sum(Interstitial%t2mmp       )
-       write (0,*) 'sum(Interstitial%q2mp     ) = ', sum(Interstitial%q2mp        )
+       write (0,*) 'sum(Interstitial%t2mmp        ) = ', sum(Interstitial%t2mmp           )
+       write (0,*) 'sum(Interstitial%q2mp         ) = ', sum(Interstitial%q2mp            )
     end if
     write (0,*) 'Interstitial_print: end'
     !
