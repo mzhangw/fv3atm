@@ -4300,6 +4300,174 @@
   dimensions = (horizontal_dimension,vertical_dimension)
   type = real
   kind = kind_phys
+###HWRF RRTMG
+[rthraten]
+  standard_name = tendency_of_potential_temperature_due_to_radiative_heating_per_sec
+  long_name =  total sky radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[RTHRATENLW]
+  standard_name = tendency_of_potential_temperature_due_to_longwave_heating_per_sec
+  long_name = total sky longwave radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[RTHRATENSW]
+  standard_name = tendency_of_potential_temperature_due_to_shortwave_heating_per_sec
+  long_name = total sky shortwave radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[CLDFRA]
+  standard_name = cloud_area_fraction_in_atmosphere_layer
+  long_name = cloud cover fraction in atmosphere layer
+  units = frac
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[levsiz]
+  standard_name = number_of_ozone_data_levels_for_CAM_radiation
+  long_name = number of ozone data levels for CAM radiation (59)
+  units = counts
+  dimensions = ()
+  type = integer
+[xlong]
+  standard_name = longitude_degree
+  long_name = longitude in degrees
+  units = degree
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[n_ozmixm]
+  standard_name = number_of_CAM_ozone_data_months
+  long_name = number of CAM ozone data months
+  units = counts
+  dimensions = ()
+  type = integer
+[alevsiz]
+  standard_name = number_of_Tegen_aerosol_optical_depth_data_levels
+  long_name = number of Tegen aerosol optical depth data levels (12)
+  units = counts
+  dimensions = ()
+  type = integer
+[no_src_types]
+  standard_name = number_of_EC_aerosol_types
+  long_name = number of aerosol types from EC (6)
+  units = counts
+  dimensions = ()
+  type = integer
+[has_reqc]
+  standard_name = flag_for_has_effective_radius_of_cloud_water
+  long_name = flag for has effective radius of cloud water
+  units = flag
+  dimensions = ()
+  type = integer
+[has_reqi]
+  standard_name = flag_for_has_effective_radius_of_cloud_ice
+  long_name = flag for has effective radius of cloud ice
+  units = flag
+  dimensions = ()
+  type = integer
+[has_reqs]
+  standard_name = flag_for_has_effective_radius_of_cloud_snow
+  long_name = flag for has effective radius of cloud snow
+  units = flag
+  dimensions = ()
+  type = integer
+[ozmixm]
+  standard_name = CAM_ozone_mixing_ratio
+  long_name = CAM_ozone_mixing_ratio
+  units = kg kg-1
+  dimensions = (horizontal_dimension,number_of_ozone_data_levels_for_CAM_radiation, number_of_CAM_ozone_data_months)
+  type = real
+  kind = kind_phys
+[pin]
+  standard_name = pressure_levels_of_CAM_ozone_mixing_ratio
+  long_name = pressure levels of CAM ozone mixing ratio
+  units = millibar
+  dimensions = (number_of_ozone_data_levels_for_CAM_radiation)
+  type = real
+  kind = kind_phys
+[aerodm]
+  standard_name = Tegen_aerosol_optical_depth
+  long_name = Tegen aerosol optical depth
+  units = AOD Pa-1
+  dimensions = (horizontal_dimension, number_of_Tegen_aerosol_optical_depth_data_levels, number_of_CAM_ozone_data_months-1, number_of_EC_aerosol_types )
+  type = real
+  kind = kind_phys
+[pina]
+  standard_name = pressure_levels_of_Tegen_aerosol_optical_depth
+  long_name = pressure levels of Tegen aerosol optical depth
+  units = millibar
+  dimensions = (number_of_Tegen_aerosol_optical_depth_data_levels)
+  type = real
+  kind = kind_phys
+[JULDAY]
+  standard_name = julian_day_in_integer
+  long_name = julian day in integer
+  units = days
+  dimensions = ()
+  type = integer
+[JULYR]
+  standard_name = julian_year_in_integer
+  long_name = julian year in integer
+  units = years
+  dimensions = ()
+  type = integer
+[XTIME]
+  standard_name = minute_since_simulation_start
+  long_name =
+  units =
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[JULIAN]
+  standard_name = julian_day
+  long_name =  julian day
+  units = days
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[IHRST]
+  standard_name = gmt
+  long_name =
+  units =
+  dimensions = ()
+  type = integer
+[NPHS]      !nml 2,6,6
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_turbulence_and_microphysics
+  long_name = number of physics timesteps between calls to HWRF turbulence and microphysics
+  units = count
+  dimensions = ()
+  type = integer
+[NRADS]   !mz: nml 30,90,270
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_shortwave_radiation
+  long_name = number of timesteps between calls to HWRF shortwave radiation
+  units = count
+  dimensions = ()
+  type = integer
+[NRADL]
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_longwave_radiation
+  long_name = number of timesteps between calls to HWRF longwave radiation
+  units = count
+  dimensions = ()
+  type = integer
+[ALBEDO]
+  standard_name = surface_albedo
+  long_name = surface albedo
+  units = frac
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+
+
+
+
+#####
 [htlwc]
   standard_name = tendency_of_air_temperature_due_to_longwave_heating_on_radiation_time_step
   long_name = total sky heating rate due to longwave radiation
