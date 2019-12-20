@@ -44,7 +44,15 @@ module GFS_typedefs
       ! since they depend on the runtime config (e.g. Model%ntoz, Model%h2o_phys, Model%aero_in)
       private :: levozp, oz_coeff, levh2o, h2o_coeff, ntrcaer
       integer :: levozp, oz_coeff, levh2o, h2o_coeff, ntrcaer
+
+!mz*HWRF
+      ! These will be set later in GFS_Control%initialize
+      ! since they depend on the runtime config (e.g. Model%hwrf_samfdeep,
+      ! Model%hwrf_samfshal)
+      !private :: asolfac_deep, asolfac_shal
+      real(kind_phys) :: asolfac_deep, asolfac_shal
 #endif
+      
 
 !> \section arg_table_GFS_typedefs
 !! \htmlinclude GFS_typedefs.html
@@ -813,6 +821,7 @@ module GFS_typedefs
     integer              :: imfshalcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux shallow convection scheme
     integer              :: imfshalcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfshalcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
+    logical              :: hwrf_samfdeep           !< flag for HWRF SAMF deepcnv scheme (HWRF)
 #endif
     integer              :: imfdeepcnv      !< flag for mass-flux deep convection scheme
                                             !<     1: July 2010 version of SAS conv scheme
@@ -826,6 +835,7 @@ module GFS_typedefs
     integer              :: imfdeepcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux deep convection scheme
     integer              :: imfdeepcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfdeepcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
+    logical              :: hwrf_samfshal           !< flag for HWRF SAMF shalcnv scheme (HWRF)
 #endif
     integer              :: isatmedmf       !< flag for scale-aware TKE-based moist edmf scheme
                                             !<     0: initial version of satmedmf (Nov. 2018)
@@ -895,12 +905,14 @@ module GFS_typedefs
     real(kind=kind_phys) :: pgcon_deep      !< reduction factor in momentum transport due to convection induced pressure gradient force
                                             !< 0.7 : Gregory et al. (1997, QJRMS)
                                             !< 0.55: Zhang & Wu (2003, JAS)
+#ifndef CCPP
     real(kind=kind_phys) :: asolfac_deep    !< aerosol-aware parameter based on Lim (2011)
                                             !< asolfac= cx / c0s(=.002)
                                             !< cx = min([-0.7 ln(Nccn) + 24]*1.e-4, c0s)
                                             !< Nccn: CCN number concentration in cm^(-3)
                                             !< Until a realistic Nccn is provided, Nccns are assumed
                                             !< as Nccn=100 for sea and Nccn=1000 for land
+#endif
 
 !--- mass flux shallow convection
     real(kind=kind_phys) :: clam_shal       !< c_e for shallow convection (Han and Pan, 2011, eq(6))
@@ -909,12 +921,14 @@ module GFS_typedefs
     real(kind=kind_phys) :: pgcon_shal      !< reduction factor in momentum transport due to convection induced pressure gradient force
                                             !< 0.7 : Gregory et al. (1997, QJRMS)
                                             !< 0.55: Zhang & Wu (2003, JAS)
+#ifndef CCPP
     real(kind=kind_phys) :: asolfac_shal    !< aerosol-aware parameter based on Lim (2011)
                                             !< asolfac= cx / c0s(=.002)
                                             !< cx = min([-0.7 ln(Nccn) + 24]*1.e-4, c0s)
                                             !< Nccn: CCN number concentration in cm^(-3)
                                             !< Until a realistic Nccn is provided, Nccns are assumed
                                             !< as Nccn=100 for sea and Nccn=1000 for land 
+#endif
 
 !--- near surface temperature model
     logical              :: nst_anl         !< flag for NSSTM analysis in gcycle/sfcsub
@@ -1766,6 +1780,8 @@ module GFS_typedefs
     logical              , pointer      :: otspt(:,:)         => null()  !<
     integer                             :: oz_coeff                      !<
     integer                             :: oz_coeffp5                    !<
+    real (kind=kind_phys)               :: asolfac_deep                  !<
+    real (kind=kind_phys)               :: asolfac_shal                  !<
     real (kind=kind_phys), pointer      :: oz_pres(:)         => null()  !<
     logical                             :: phys_hydrostatic              !<
     real (kind=kind_phys), pointer      :: plvl(:,:)          => null()  !<
@@ -2924,6 +2940,9 @@ module GFS_typedefs
                                                                       !<     1: updated version of satmedmf (as of May 2019)
     logical              :: do_deep        = .true.                   !< whether to do deep convection
 #ifdef CCPP
+!mz* HWRF physics suite
+    logical              :: hwrf_samfdeep  = .false.                  !< flag for HWRF SAMF deepcnv scheme 
+    logical              :: hwrf_samfshal  = .false.                  !< flag for HWRF SAMF shalcnv scheme 
     logical              :: do_mynnedmf       = .false.               !< flag for MYNN-EDMF
     logical              :: do_mynnsfclay     = .false.               !< flag for MYNN Surface Layer Scheme
     ! DH* TODO - move to MYNN namelist section
@@ -2983,6 +3002,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: pgcon_deep     = 0.55            !< reduction factor in momentum transport due to convection induced pressure gradient force
                                                              !< 0.7 : Gregory et al. (1997, QJRMS)
                                                              !< 0.55: Zhang & Wu (2003, JAS)
+#ifndef CCPP
     real(kind=kind_phys) :: asolfac_deep   = 0.958           !< aerosol-aware parameter based on Lim (2011)
                                                              !< asolfac= cx / c0s(=.002)
                                                              !< cx = min([-0.7 ln(Nccn) + 24]*1.e-4, c0s)
@@ -2990,6 +3010,7 @@ module GFS_typedefs
                                                              !< Until a realistic Nccn is provided, Nccns are assumed
                                                              !< as Nccn=100 for sea and Nccn=1000 for land 
 
+#endif
 !--- mass flux shallow convection
     real(kind=kind_phys) :: clam_shal      = 0.3             !< c_e for shallow convection (Han and Pan, 2011, eq(6))
     real(kind=kind_phys) :: c0s_shal       = 0.002           !< conversion parameter of detrainment from liquid water into convetive precipitaiton
@@ -2997,6 +3018,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: pgcon_shal     = 0.55            !< reduction factor in momentum transport due to convection induced pressure gradient force
                                                              !< 0.7 : Gregory et al. (1997, QJRMS)
                                                              !< 0.55: Zhang & Wu (2003, JAS)
+#ifndef CCPP
     real(kind=kind_phys) :: asolfac_shal   = 0.958           !< aerosol-aware parameter based on Lim (2011)
                                                              !< asolfac= cx / c0s(=.002)
                                                              !< cx = min([-0.7 ln(Nccn) + 24]*1.e-4, c0s)
@@ -3004,6 +3026,7 @@ module GFS_typedefs
                                                              !< Until a realistic Nccn is provided, Nccns are assumed
                                                              !< as Nccn=100 for sea and Nccn=1000 for land 
 
+#endif
 !--- near surface sea temperature model
     logical              :: nst_anl        = .false.         !< flag for NSSTM analysis in gcycle/sfcsub
     integer              :: lsea           = 0
@@ -3136,6 +3159,7 @@ module GFS_typedefs
                                bl_mynn_mixqt, icloud_bl, bl_mynn_tkeadvect, gwd_opt,        &
                                ! *DH
                                do_myjsfc, do_myjpbl,                                        &
+                               hwrf_samfdeep, hwrf_samfshal,                                &
 #endif
                                h2o_phys, pdfcld, shcnvcw, redrag, hybedmf, satmedmf,        &
                                shinhong, do_ysu, dspheat, lheatstrg, cnvcld,                &
@@ -3153,9 +3177,11 @@ module GFS_typedefs
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
                                betas_deep, evfact_deep, evfactl_deep, pgcon_deep,           &
-                               asolfac_deep,                                                &
+#ifndef CCPP
+                               asolfac_deep,  asolfac_shal,                                 &
+#endif
                           !--- mass flux shallow convection
-                               clam_shal, c0s_shal, c1_shal, pgcon_shal, asolfac_shal,      &
+                               clam_shal, c0s_shal, c1_shal, pgcon_shal,                    &
                           !--- near surface sea temperature model
                                nst_anl, lsea, nstf_name,                                    &
                                frac_grid, min_lakeice, min_seaice,                          &
@@ -3485,6 +3511,19 @@ module GFS_typedefs
     Model%shoc_parm        = shoc_parm
     Model%shocaftcnv       = shocaftcnv
     Model%shoc_cld         = shoc_cld
+!mz*: HWRF physics suite
+#ifdef CCPP
+    if (hwrf_samfdeep .and. imfdeepcnv .ne. 2) then
+       write(*,*) 'Logic error: hwrf_samfdeep has to be used along with imfdeepcnv=2'
+       stop
+    end if
+    if (hwrf_samfshal .and. imfshalcnv .ne. 2) then
+       write(*,*) 'Logic error: hwrf_samfshal has to be used along with imfshalcnv=2'
+       stop
+    end if
+    Model%hwrf_samfdeep = hwrf_samfdeep
+    Model%hwrf_samfshal = hwrf_samfshal
+#endif
 #ifdef CCPP
     if (oz_phys .and. oz_phys_2015) then
        write(*,*) 'Logic error: can only use one ozone physics option (oz_phys or oz_phys_2015), not both. Exiting.'
@@ -3573,14 +3612,18 @@ module GFS_typedefs
     Model%evfact_deep      = evfact_deep
     Model%evfactl_deep     = evfactl_deep
     Model%pgcon_deep       = pgcon_deep
+#ifndef CCPP
     Model%asolfac_deep     = asolfac_deep
+#endif
 
 !--- mass flux shallow convection
     Model%clam_shal        = clam_shal
     Model%c0s_shal         = c0s_shal
     Model%c1_shal          = c1_shal
     Model%pgcon_shal       = pgcon_shal
+#ifndef CCPP
     Model%asolfac_shal     = asolfac_shal
+#endif
 
 !--- near surface sea temperature model
     Model%nst_anl          = nst_anl
@@ -3764,6 +3807,22 @@ module GFS_typedefs
        end if
     end if
 #endif
+
+#ifdef CCPP
+!mz* HWRF SAMF physics
+    if(Model%hwrf_samfdeep) then
+        asolfac_deep   = 0.89
+    else
+        asolfac_deep   = 0.958
+    endif
+
+    if(Model%hwrf_samfshal) then
+        asolfac_shal   = 0.89
+    else
+        asolfac_shal   = 0.958
+    endif
+#endif
+   
 
 !--- quantities to be used to derive phy_f*d totals
     Model%nshoc_2d         = nshoc_2d
@@ -4588,7 +4647,9 @@ module GFS_typedefs
         print *, ' evfact_deep       : ', Model%evfact_deep
         print *, ' evfactl_deep      : ', Model%evfactl_deep
         print *, ' pgcon_deep        : ', Model%pgcon_deep
+#ifndef CCPP
         print *, ' asolfac_deep      : ', Model%asolfac_deep
+#endif
         print *, ' '
       endif
       if (Model%imfshalcnv >= 0) then
@@ -4597,7 +4658,9 @@ module GFS_typedefs
         print *, ' c0s_shal          : ', Model%c0s_shal
         print *, ' c1_shal           : ', Model%c1_shal
         print *, ' pgcon_shal        : ', Model%pgcon_shal
+#ifndef CCPP
         print *, ' asolfac_shal      : ', Model%asolfac_shal
+#endif
       endif
       print *, ' '
       print *, 'near surface sea temperature model'
@@ -5994,6 +6057,8 @@ module GFS_typedefs
     Interstitial%nspc1            = NSPC1
     Interstitial%oz_coeff         = oz_coeff
     Interstitial%oz_coeffp5       = oz_coeff+5
+    Interstitial%asolfac_deep     = asolfac_deep
+    Interstitial%asolfac_shal     = asolfac_shal
     ! h2o_pres and oz_pres do not change during the run, but
     ! need to be set later in GFS_phys_time_vary_init (after
     ! h2o_pres/oz_pres are read in read_h2odata/read_o3data)
@@ -6529,6 +6594,8 @@ module GFS_typedefs
     write (0,*) 'Interstitial%ntiwx             = ', Interstitial%ntiwx
     write (0,*) 'Interstitial%nvdiff            = ', Interstitial%nvdiff
     write (0,*) 'Interstitial%oz_coeff          = ', Interstitial%oz_coeff
+    write (0,*) 'Interstitial%asolfac_deep      = ', Interstitial%asolfac_deep
+    write (0,*) 'Interstitial%asolfac_shal      = ', Interstitial%asolfac_shal
     write (0,*) 'sum(Interstitial%oz_pres)      = ', sum(Interstitial%oz_pres)
     write (0,*) 'Interstitial%phys_hydrostatic  = ', Interstitial%phys_hydrostatic
     write (0,*) 'Interstitial%skip_macro        = ', Interstitial%skip_macro
