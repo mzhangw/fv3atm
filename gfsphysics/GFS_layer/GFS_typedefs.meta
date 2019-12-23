@@ -4300,7 +4300,6 @@
   dimensions = (horizontal_dimension,vertical_dimension)
   type = real
   kind = kind_phys
-###HWRF RRTMG
 [rthraten]
   standard_name = tendency_of_potential_temperature_due_to_radiative_heating_per_sec
   long_name =  total sky radiative heating rate per sec
@@ -4345,6 +4344,12 @@
 [n_ozmixm]
   standard_name = number_of_CAM_ozone_data_months
   long_name = number of CAM ozone data months
+  units = counts
+  dimensions = ()
+  type = integer
+[n_ozmixm_m1]
+  standard_name = number_of_CAM_ozone_data_months_minus_one
+  long_name = number of CAM ozone data months minus one
   units = counts
   dimensions = ()
   type = integer
@@ -4396,7 +4401,7 @@
   standard_name = Tegen_aerosol_optical_depth
   long_name = Tegen aerosol optical depth
   units = AOD Pa-1
-  dimensions = (horizontal_dimension, number_of_Tegen_aerosol_optical_depth_data_levels, number_of_CAM_ozone_data_months-1, number_of_EC_aerosol_types )
+  dimensions = (horizontal_dimension, number_of_Tegen_aerosol_optical_depth_data_levels, number_of_CAM_ozone_data_months_minus_one, number_of_EC_aerosol_types )
   type = real
   kind = kind_phys
 [pina]
@@ -4425,26 +4430,19 @@
   dimensions = ()
   type = real
   kind = kind_phys
-[JULIAN]
-  standard_name = julian_day
-  long_name =  julian day
-  units = days
-  dimensions = ()
-  type = real
-  kind = kind_phys
 [IHRST]
   standard_name = gmt
   long_name =
   units =
   dimensions = ()
   type = integer
-[NPHS]      !nml 2,6,6
+[NPHS]
   standard_name = number_of_physics_timesteps_between_calls_to_HWRF_turbulence_and_microphysics
   long_name = number of physics timesteps between calls to HWRF turbulence and microphysics
   units = count
   dimensions = ()
   type = integer
-[NRADS]   !mz: nml 30,90,270
+[NRADS]  
   standard_name = number_of_physics_timesteps_between_calls_to_HWRF_shortwave_radiation
   long_name = number of timesteps between calls to HWRF shortwave radiation
   units = count
@@ -4537,14 +4535,14 @@
   standard_name = shortwave_heating_rate_per_day
   long_name = shortwave heating rate per day
   units = K d-1
-  dimension =  (horizontal_dimension, vertical_dimension)
+  dimensions =  (horizontal_dimension, vertical_dimension)
   type = real
   kind = kind_phys
 [hrlwpd]
   standard_name = longwave_heating_rate_per_day
   long_name = longwave heating rate perday
   units = K d-1
-  dimension =  (horizontal_dimension, vertical_dimension)
+  dimensions =  (horizontal_dimension, vertical_dimension)
   type = real
   kind = kind_phys
 [SWUPT]
@@ -4569,9 +4567,8 @@
   type = real
   kind = kind_phys
 [SWDNTC]
-  standard_name ]
-  standard_name = surface_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
-  long_name = surface downwelling shortwave flux assuming clear sky at current time
+  standard_name = TOA_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
+  long_name = instantaneous downwelling shortwave flux assuming clear sky at TOA
   units = W m-2
   dimensions = (horizontal_dimension)
   type = real
@@ -4791,8 +4788,6 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
-
-#####HWRF#######
 [htlwc]
   standard_name = tendency_of_air_temperature_due_to_longwave_heating_on_radiation_time_step
   long_name = total sky heating rate due to longwave radiation
