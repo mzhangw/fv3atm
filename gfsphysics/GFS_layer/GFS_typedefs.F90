@@ -834,6 +834,19 @@ module GFS_typedefs
     integer              :: isatmedmf_vdif  = 0 !< flag for initial version of satmedmf (Nov. 2018)
     integer              :: isatmedmf_vdifq = 1 !< flag for updated version of satmedmf (as of May 2019)
 #endif
+!mz*HWRF RRTMG
+#ifdef CCPP
+    integer              :: levsiz          !< number of ozone data levels for CAM radiation (59)
+    integer              :: paerlev         !< number of aerosol data levels for CAM radiation (29)
+    integer              :: no_src_types    !< number of aerosol types from EC (6)
+    integer              :: alevsiz         !< number of aerosol optical depth data levels from EC (12)
+    integer              :: o3input         !< ozone input option for radiation ()
+    integer              :: nrads
+    integer              :: nradl
+    integer              :: nphs
+   
+    
+#endif
     integer              :: nmtvr           !< number of topographic variables such as variance etc
                                             !< used in the GWD parameterization
     integer              :: jcap            !< number of spectral wave trancation used only by sascnv shalcnv
