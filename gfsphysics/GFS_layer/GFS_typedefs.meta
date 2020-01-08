@@ -3874,6 +3874,48 @@
   units = flag
   dimensions = () 
   type = integer
+[levsiz]
+  standard_name = number_of_ozone_data_levels_for_CAM_radiation
+  long_name = number of ozone data levels for CAM radiation (59)
+  units = counts
+  dimensions = ()
+  type = integer
+[n_ozmixm]
+  standard_name = number_of_CAM_ozone_data_months
+  long_name = number of CAM ozone data months
+  units = counts
+  dimensions = ()
+  type = integer
+[alevsiz]
+  standard_name = number_of_Tegen_aerosol_optical_depth_data_levels
+  long_name = number of Tegen aerosol optical depth data levels (12)
+  units = counts
+  dimensions = ()
+  type = integer
+[no_src_types]
+  standard_name = number_of_EC_aerosol_types
+  long_name = number of aerosol types from EC (6)
+  units = counts
+  dimensions = ()
+  type = integer
+[NPHS]
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_turbulence_and_microphysics
+  long_name = number of physics timesteps between calls to HWRF turbulence and microphysics
+  units = count
+  dimensions = ()
+  type = integer
+[NRADS]
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_shortwave_radiation
+  long_name = number of timesteps between calls to HWRF shortwave radiation
+  units = count
+  dimensions = ()
+  type = integer
+[NRADL]
+  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_longwave_radiation
+  long_name = number of timesteps between calls to HWRF longwave radiation
+  units = count
+  dimensions = ()
+  type = integer
 [do_mynnedmf]
   standard_name = do_mynnedmf
   long_name = flag to activate MYNN-EDMF
@@ -4328,12 +4370,6 @@
   dimensions = (horizontal_dimension,vertical_dimension)
   type = real
   kind = kind_phys
-[levsiz]
-  standard_name = number_of_ozone_data_levels_for_CAM_radiation
-  long_name = number of ozone data levels for CAM radiation (59)
-  units = counts
-  dimensions = ()
-  type = integer
 [xlong]
   standard_name = longitude_degree
   long_name = longitude in degrees
@@ -4341,27 +4377,9 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
-[n_ozmixm]
-  standard_name = number_of_CAM_ozone_data_months
-  long_name = number of CAM ozone data months
-  units = counts
-  dimensions = ()
-  type = integer
 [n_ozmixm_m1]
   standard_name = number_of_CAM_ozone_data_months_minus_one
   long_name = number of CAM ozone data months minus one
-  units = counts
-  dimensions = ()
-  type = integer
-[alevsiz]
-  standard_name = number_of_Tegen_aerosol_optical_depth_data_levels
-  long_name = number of Tegen aerosol optical depth data levels (12)
-  units = counts
-  dimensions = ()
-  type = integer
-[no_src_types]
-  standard_name = number_of_EC_aerosol_types
-  long_name = number of aerosol types from EC (6)
   units = counts
   dimensions = ()
   type = integer
@@ -4434,24 +4452,6 @@
   standard_name = gmt
   long_name =
   units =
-  dimensions = ()
-  type = integer
-[NPHS]
-  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_turbulence_and_microphysics
-  long_name = number of physics timesteps between calls to HWRF turbulence and microphysics
-  units = count
-  dimensions = ()
-  type = integer
-[NRADS]  
-  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_shortwave_radiation
-  long_name = number of timesteps between calls to HWRF shortwave radiation
-  units = count
-  dimensions = ()
-  type = integer
-[NRADL]
-  standard_name = number_of_physics_timesteps_between_calls_to_HWRF_longwave_radiation
-  long_name = number of timesteps between calls to HWRF longwave radiation
-  units = count
   dimensions = ()
   type = integer
 [ALBEDO]
@@ -4567,13 +4567,8 @@
   type = real
   kind = kind_phys
 [SWDNTC]
-  standard_name = TOA_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
+  standard_name = toa_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
   long_name = instantaneous downwelling shortwave flux assuming clear sky at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-  long_name = instantaneous downwelling clear sky shortwave flux at TOA
   units = W m-2
   dimensions = (horizontal_dimension)
   type = real

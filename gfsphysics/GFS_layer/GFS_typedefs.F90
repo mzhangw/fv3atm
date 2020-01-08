@@ -44,6 +44,10 @@ module GFS_typedefs
       ! since they depend on the runtime config (e.g. Model%ntoz, Model%h2o_phys, Model%aero_in)
       private :: levozp, oz_coeff, levh2o, h2o_coeff, ntrcaer
       integer :: levozp, oz_coeff, levh2o, h2o_coeff, ntrcaer
+
+      !HWRF rrtmg
+      integer, parameter :: n_ozmixm = 12
+      integer, parameter :: n_ozmixm_m1 = 11
 #endif
 
 !> \section arg_table_GFS_typedefs
@@ -836,16 +840,21 @@ module GFS_typedefs
 #endif
 !mz*HWRF RRTMG
 #ifdef CCPP
+    logical              :: do_hwrfrrtmg    !< flag for HWRF RRTMG scheme 
+    logical              :: do_gfsrrtmg     !< flag for GFS RRTMG scheme
     integer              :: levsiz          !< number of ozone data levels for CAM radiation (59)
     integer              :: paerlev         !< number of aerosol data levels for CAM radiation (29)
     integer              :: no_src_types    !< number of aerosol types from EC (6)
     integer              :: alevsiz         !< number of aerosol optical depth data levels from EC (12)
-    integer              :: o3input         !< ozone input option for radiation ()
-    integer              :: nrads
-    integer              :: nradl
-    integer              :: nphs
-   
-    
+    integer              :: o3input         !< ozone input option for radiation (currently HWRF rrtmg only)
+                                            !!   = 0, using profile inside the code
+                                            !!   = 2, using CAM ozone data (ozone.formatted)
+    integer              :: aer_opt         !< aerosol input option for radiation (currently HWRF rrtmg only)
+                                            !!   = 0, none
+                                            !!   = 1, using Tegen (1997) data
+    integer              :: nrads           !< fundamental timesteps between calls to NMM shortwave radiation 
+    integer              :: nradl           !< fundamental timesteps between calls to NMM longwave radiation
+    integer              :: nphs            !< fundamental timesteps between calls to NMM turbulence 
 #endif
     integer              :: nmtvr           !< number of topographic variables such as variance etc
                                             !< used in the GWD parameterization
@@ -1912,7 +1921,71 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: qr_r(:,:)               => null()  !<
     real (kind=kind_phys), pointer :: qs_r(:,:)               => null()  !<
     real (kind=kind_phys), pointer :: qg_r(:,:)               => null()  !<
-
+    real (kind=kind_phys), pointer :: rthraten(:,:)           => null()  !<
+    real (kind=kind_phys), pointer :: rthratenlw(:,:)         => null()  !<
+    real (kind=kind_phys), pointer :: rthratensw(:,:)         => null()  !<
+    real (kind=kind_phys), pointer :: cldfra(:,:)             => null()  !<
+    real (kind=kind_phys), pointer :: xlong(:)                => null()  !<
+    integer                        :: n_ozmixm
+    integer                        :: n_ozmixm_m1
+    integer                        :: has_reqc                              
+    integer                        :: has_reqi
+    integer                        :: has_reqs
+    real (kind=kind_phys), pointer :: ozmixm(:,:,:)           => null()  !<
+    real (kind=kind_phys), pointer :: pin(:)                  => null()  !<
+    real (kind=kind_phys), pointer :: aerodm(:,:,:,:)         => null()  !<
+    real (kind=kind_phys), pointer :: pina(:)                 => null()  !<
+    integer                        :: julday
+    integer                        :: julyr
+    real (kind=kind_phys)          :: xtime
+    integer                        :: ihrst
+    real (kind=kind_phys), pointer :: albedo(:)               => null()  !<
+    real (kind=kind_phys), pointer :: sm(:)                   => null()  !<
+    real (kind=kind_phys), pointer :: rlwtt(:,:)              => null()  !<
+    real (kind=kind_phys), pointer :: rswtt(:,:)              => null()  !<
+    real (kind=kind_phys), pointer :: rswinc(:,:)               => null()  !<
+    real (kind=kind_phys), pointer :: rlwtoa(:,:)               => null()  !<
+    real (kind=kind_phys), pointer :: czmean(:)               => null()  !<
+    real (kind=kind_phys), pointer :: sice(:)                 => null()  !<
+    real (kind=kind_phys), pointer :: re_cloud(:,:)           => null()  !<
+    real (kind=kind_phys), pointer :: re_ice(:,:)             => null()  !<
+    real (kind=kind_phys), pointer :: re_snow(:,:)            => null()  !<
+    real (kind=kind_phys), pointer :: hrswpd(:,:)             => null()  !< 
+    real (kind=kind_phys), pointer :: hrlwpd(:,:)             => null()  !<
+    real (kind=kind_phys), pointer :: swupt(:)                => null()  !<
+    real (kind=kind_phys), pointer :: swuptc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swdnt(:)                => null()  !<
+    real (kind=kind_phys), pointer :: swdntc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swupb(:)                => null()  !<
+    real (kind=kind_phys), pointer :: swupbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swdnb(:)                => null()  !<
+    real (kind=kind_phys), pointer :: swdnbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwupt(:)                => null()  !<
+    real (kind=kind_phys), pointer :: lwuptc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwdnt(:)                => null()  !<
+    real (kind=kind_phys), pointer :: lwdntc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwupb(:)                => null()  !<
+    real (kind=kind_phys), pointer :: lwupbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwdnb(:)                => null()  !<
+    real (kind=kind_phys), pointer :: lwdnbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: acswupt(:)              => null()  !<
+    real (kind=kind_phys), pointer :: acswuptc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: acswdnt(:)              => null()  !< 
+    real (kind=kind_phys), pointer :: acswdntc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: acswupb(:)              => null()  !<
+    real (kind=kind_phys), pointer :: acswupbc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: acswdnb(:)              => null()  !<
+    real (kind=kind_phys), pointer :: acswdnbc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: aclwupt(:)              => null()  !<
+    real (kind=kind_phys), pointer :: aclwuptc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: aclwdnt(:)              => null()  !<
+    real (kind=kind_phys), pointer :: aclwdntc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: aclwupb(:)              => null()  !<
+    real (kind=kind_phys), pointer :: aclwupbc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: aclwdnb(:)              => null()  !<
+    real (kind=kind_phys), pointer :: aclwdnbc(:)             => null()  !<
+    real (kind=kind_phys), pointer :: swvisdir(:)             => null()  !<
+    real (kind=kind_phys), pointer :: swvisdif(:)             => null()  !<
 
     !-- Ferrier-Aligo MP scheme
     real (kind=kind_phys), pointer :: f_rain     (:,:)   => null()  !<
@@ -2935,6 +3008,30 @@ module GFS_typedefs
     integer              :: isatmedmf      =  0                       !< flag for scale-aware TKE-based moist edmf scheme
                                                                       !<     0: initial version of satmedmf (Nov. 2018)
                                                                       !<     1: updated version of satmedmf (as of May 2019)
+!mz*HWRF RRTMG
+#ifdef CCPP
+    logical              :: do_hwrfrrtmg   = .false.                  !< flag for HWRF RRTMG scheme 
+    logical              :: do_gfsrrtmg    = .true.                   !< flag for GFS RRTMG scheme 
+    integer              :: levsiz         = 59                       !< CAM radiation input ozone levels for HWRF RRTMG only
+    integer              :: paerlev        = 29                       !< CAM radiation input aerosol levels for HWRF RRTMG only
+    integer              :: no_src_types   = 6                        !< for Tegen aerosols: organic and black carbon, sea salt, sulfalte,
+                                                                      !! dust, and stratospheric aerosol (volcanic ashed - currently 0)  
+    integer              :: alevsiz        = 12                       !< for Tegen aerosol input levels 
+    integer              :: o3input        = 2                        !< ozone input option for HWRF RRTMG only
+                                                                      !<      0: using profile inside the code
+                                                                      !<      2: using CAM ozone data (ozone.formatted) 
+    integer              :: aer_opt        = 1                        !< aerosol input option for HWRF RRTMG only
+                                                                      !<      0: none
+                                                                      !<      1: using Tegen (1997) data
+    integer              :: nrads          = 90                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
+                                                                      !! shortwave radiation; radt will be computed from this  
+    integer              :: nradl          = 90                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
+                                                                      !! longwave radiation; radt will be computed from this
+    integer              :: nphs           = 1                        !! for HWRF physics: number of fundamental timesteps between calls to
+                                                                      !! turbulence and microphysics 
+
+#endif
+!mz*
     logical              :: do_deep        = .true.                   !< whether to do deep convection
 #ifdef CCPP
     logical              :: do_mynnedmf       = .false.               !< flag for MYNN-EDMF
@@ -2986,7 +3083,7 @@ module GFS_typedefs
     real(kind=kind_phys) :: ral_ts         = 0.0d0           !< time scale for Rayleigh damping in days
 
 !--- mass flux deep convection
-    real(kind=kind_phys) :: clam_deep      = 0.1             !< c_e for deep convection (Han and Pan, 2011, eq(6))
+    real(kind=kind_phys) :: clam_deep      = 0.1             !< c_e for deep convection (Han et al., 2017, eq(5))
     real(kind=kind_phys) :: c0s_deep       = 0.002           !< convective rain conversion parameter
     real(kind=kind_phys) :: c1_deep        = 0.002           !< conversion parameter of detrainment from liquid water into grid-scale cloud water
     real(kind=kind_phys) :: betal_deep     = 0.05            !< fraction factor of downdraft air mass reaching ground surface over land
@@ -3004,7 +3101,7 @@ module GFS_typedefs
                                                              !< as Nccn=100 for sea and Nccn=1000 for land 
 
 !--- mass flux shallow convection
-    real(kind=kind_phys) :: clam_shal      = 0.3             !< c_e for shallow convection (Han and Pan, 2011, eq(6))
+    real(kind=kind_phys) :: clam_shal      = 0.3             !< c_e for shallow convection (Han et al., 2017, eq(5))
     real(kind=kind_phys) :: c0s_shal       = 0.002           !< conversion parameter of detrainment from liquid water into convetive precipitaiton
     real(kind=kind_phys) :: c1_shal        = 5.e-4           !< conversion parameter of detrainment from liquid water into grid-scale cloud water
     real(kind=kind_phys) :: pgcon_shal     = 0.55            !< reduction factor in momentum transport due to convection induced pressure gradient force
@@ -3159,9 +3256,14 @@ module GFS_typedefs
                                do_sppt, do_shum, do_skeb, do_sfcperts,                      &
                           !--- Rayleigh friction
                                prslrd0, ral_ts,  ldiag_ugwp, do_ugwp, do_tofd,              &
-                          ! --- Ferrier-Aligo
+!mz* HWRF physics
 #ifdef CCPP
+                          !--- Ferrier-Aligo MP
                                spec_adv, rhgrd,                                             &
+                          !--- HWRF RRTMG
+                               do_hwrfrrtmg, do_gfsrrtmg,                                   &
+                               levsiz, paerlev, no_src_types, alevsiz, o3input, aer_opt,    &
+                               nrads, nradl, nphs,                                          &
 #endif
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
@@ -3416,10 +3518,23 @@ module GFS_typedefs
     Model%ltaerosol        = ltaerosol
     Model%lradar           = lradar
     Model%ttendlim         = ttendlim
-!--- F-A MP parameters
+!--- HWRF physics
 #ifdef CCPP
+!--- F-A MP parameters
     Model%rhgrd            = rhgrd
     Model%spec_adv         = spec_adv
+!--- HWRF RRTMG
+    Model%do_hwrfrrtmg     = do_hwrfrrtmg
+    Model%do_gfsrrtmg      = do_gfsrrtmg
+    Model%levsiz           = levsiz
+    Model%paerlev          = paerlev
+    Model%no_src_types     = no_src_types
+    Model%alevsiz          = alevsiz
+    Model%o3input          = o3input
+    Model%aer_opt          = aer_opt
+    Model%nrads            = nrads
+    Model%nradl            = nradl
+    Model%nphs             = nphs
 #endif 
 
 !--- gfdl  MP parameters
@@ -4042,6 +4157,15 @@ module GFS_typedefs
       else
         print*, ' Deep convection scheme disabled'
       endif
+!mz* RRTMG
+#ifdef CCPP
+      if (Model%do_hwrfrrtmg) then
+          print *, 'HWRF RRTMG used'
+      else if (Model%do_gfsrrtmg) then
+          print *, 'GFS RRTMG used'
+      endif
+#endif      
+
       if (Model%satmedmf) then
 #ifdef CCPP
         if (Model%isatmedmf == Model%isatmedmf_vdif) then
@@ -4585,6 +4709,18 @@ module GFS_typedefs
       print *, ' do_myjsfc         : ', Model%do_myjsfc
       print *, ' do_myjpbl         : ', Model%do_myjpbl
       print *, ' gwd_opt           : ', Model%gwd_opt
+!---- HWRF RRTMG 
+      print *, ' do_hwrfrrtmg      : ', Model%do_hwrfrrtmg 
+      print *, ' do_gfsrrtmg       : ', Model%do_gfsrrtmg
+      print *, ' levsiz            : ', Model%levsiz
+      print *, ' paerlev           : ', Model%paerlev
+      print *, ' no_src_types      : ', Model%no_src_types
+      print *, ' alevsiz           : ', Model%alevsiz
+      print *, ' o3input           : ', Model%o3input
+      print *, ' aer_opt           : ', Model%aer_opt
+      print *, ' nrads             : ', Model%nrads
+      print *, ' nradl             : ', Model%nradl
+      print *, ' nphs              : ', Model%nphs
 #endif
       print *, ' '
       print *, 'Rayleigh friction'
@@ -5961,15 +6097,79 @@ module GFS_typedefs
        allocate (Interstitial%cnv_ndrop  (IM,Model%levs))
        allocate (Interstitial%cnv_nice   (IM,Model%levs))
     end if
-    if (Model%imp_physics == Model%imp_physics_fer_hires) then
-    !--- if HWRF physics?
+    if (Model%do_hwrfrrtmg) then
+    !--- if HWRF RRTMG
        allocate (Interstitial%qv_r        (IM,Model%levs))
        allocate (Interstitial%qc_r        (IM,Model%levs))
        allocate (Interstitial%qi_r        (IM,Model%levs))
        allocate (Interstitial%qr_r        (IM,Model%levs))
        allocate (Interstitial%qs_r        (IM,Model%levs))
        allocate (Interstitial%qg_r        (IM,Model%levs))
+       allocate (Interstitial%rthraten    (IM,Model%levs))
+       allocate (Interstitial%rthratenlw  (IM,Model%levs))
+       allocate (Interstitial%rthratensw  (IM,Model%levs))
+       allocate (Interstitial%cldfra      (IM,Model%levs))
+       allocate (Interstitial%xlong       (IM))
+       ! set components that do not change
+       Interstitial%n_ozmixm            = n_ozmixm
+       Interstitial%n_ozmixm_m1         = n_ozmixm_m1 
+       !
+       allocate (Interstitial%ozmixm      (IM,Model%levsiz,n_ozmixm))
+       allocate (Interstitial%pin         (Model%levsiz))
+       allocate (Interstitial%aerodm      (IM,Model%alevsiz,n_ozmixm_m1,Model%no_src_types))
+       allocate (Interstitial%pina        (Model%alevsiz))
+       allocate (Interstitial%albedo      (IM))
+       allocate (Interstitial%sm          (IM))
+       allocate (Interstitial%rlwtt       (IM,Model%levs))
+       allocate (Interstitial%rswtt       (IM,Model%levs))
+       allocate (Interstitial%rswinc      (IM,Model%levs))
+       allocate (Interstitial%rlwtoa      (IM,Model%levs))
+       allocate (Interstitial%czmean      (IM))
+       allocate (Interstitial%sice        (IM))
+       allocate (Interstitial%re_cloud    (IM,Model%levs))
+       allocate (Interstitial%re_ice      (IM,Model%levs))
+       allocate (Interstitial%re_snow     (IM,Model%levs))
+       allocate (Interstitial%hrswpd      (IM,Model%levs))
+       allocate (Interstitial%hrlwpd      (IM,Model%levs))
+       allocate (Interstitial%hrlwpd      (IM,Model%levs))
+       allocate (Interstitial%swupt       (IM))
+       allocate (Interstitial%swuptc      (IM))
+       allocate (Interstitial%swdnt       (IM))
+       allocate (Interstitial%swdntc      (IM))
+       allocate (Interstitial%swupb       (IM))
+       allocate (Interstitial%swupbc      (IM))
+       allocate (Interstitial%swdnb       (IM))
+       allocate (Interstitial%swdnbc      (IM))
+       allocate (Interstitial%lwupt       (IM))
+       allocate (Interstitial%lwuptc      (IM))
+       allocate (Interstitial%lwdnt       (IM))
+       allocate (Interstitial%lwdntc      (IM))
+       allocate (Interstitial%lwupb       (IM))
+       allocate (Interstitial%lwupbc      (IM))
+       allocate (Interstitial%lwdnb       (IM))
+       allocate (Interstitial%lwdnbc      (IM))
+       allocate (Interstitial%acswupt     (IM))
+       allocate (Interstitial%acswuptc    (IM))
+       allocate (Interstitial%acswdnt     (IM))
+       allocate (Interstitial%acswdntc    (IM))
+       allocate (Interstitial%acswupb     (IM))
+       allocate (Interstitial%acswupbc    (IM))
+       allocate (Interstitial%acswdnb     (IM))
+       allocate (Interstitial%acswdnbc    (IM))
+       allocate (Interstitial%aclwupt     (IM))
+       allocate (Interstitial%aclwuptc    (IM))
+       allocate (Interstitial%aclwdnt     (IM))
+       allocate (Interstitial%aclwdntc    (IM))
+       allocate (Interstitial%aclwupb     (IM))
+       allocate (Interstitial%aclwupbc    (IM))
+       allocate (Interstitial%aclwdnb     (IM))
+       allocate (Interstitial%aclwdnbc    (IM))
+       allocate (Interstitial%swvisdir    (IM))
+       allocate (Interstitial%swvisdif    (IM))
 
+     endif
+
+    if (Model%imp_physics == Model%imp_physics_fer_hires) then
     !--- Ferrier-Aligo MP scheme
        allocate (Interstitial%f_ice       (IM,Model%levs))
        allocate (Interstitial%f_rain      (IM,Model%levs))
@@ -6184,56 +6384,118 @@ module GFS_typedefs
     class(GFS_interstitial_type) :: Interstitial
     type(GFS_control_type), intent(in) :: Model
     !
-    Interstitial%aerodp       = clear_val
-    Interstitial%alb1d        = clear_val
-    Interstitial%cldsa        = clear_val
-    Interstitial%cldtaulw     = clear_val
-    Interstitial%cldtausw     = clear_val
-    Interstitial%clouds       = clear_val
-    Interstitial%de_lgth      = clear_val
-    Interstitial%delr         = clear_val
-    Interstitial%dzlyr        = clear_val
-    Interstitial%faerlw       = clear_val
-    Interstitial%faersw       = clear_val
-    Interstitial%gasvmr       = clear_val
-    Interstitial%idxday       = 0
-    Interstitial%kb           = 0
-    Interstitial%kd           = 0
-    Interstitial%kt           = 0
-    Interstitial%mbota        = 0
-    Interstitial%mtopa        = 0
-    Interstitial%nday         = 0
-    Interstitial%olyr         = clear_val
-    Interstitial%plvl         = clear_val
-    Interstitial%plyr         = clear_val
-    Interstitial%qlyr         = clear_val
-    Interstitial%raddt        = clear_val
-    Interstitial%scmpsw%uvbfc = clear_val
-    Interstitial%scmpsw%uvbf0 = clear_val
-    Interstitial%scmpsw%nirbm = clear_val
-    Interstitial%scmpsw%nirdf = clear_val
-    Interstitial%scmpsw%visbm = clear_val
-    Interstitial%scmpsw%visdf = clear_val
-    Interstitial%sfcalb       = clear_val
-    Interstitial%tlvl         = clear_val
-    Interstitial%tlyr         = clear_val
-    Interstitial%tsfa         = clear_val
-    Interstitial%tsfg         = clear_val
+
+    if (model%do_gfsrrtmg) then
+         Interstitial%aerodp       = clear_val
+         Interstitial%alb1d        = clear_val
+         Interstitial%cldsa        = clear_val
+         Interstitial%cldtaulw     = clear_val
+         Interstitial%cldtausw     = clear_val
+         Interstitial%clouds       = clear_val
+         Interstitial%de_lgth      = clear_val
+         Interstitial%delr         = clear_val
+         Interstitial%dzlyr        = clear_val
+         Interstitial%faerlw       = clear_val
+         Interstitial%faersw       = clear_val
+         Interstitial%gasvmr       = clear_val
+         Interstitial%idxday       = 0
+         Interstitial%kb           = 0
+         Interstitial%kd           = 0
+         Interstitial%kt           = 0
+         Interstitial%mbota        = 0
+         Interstitial%mtopa        = 0
+         Interstitial%nday         = 0
+         Interstitial%olyr         = clear_val
+         Interstitial%plvl         = clear_val
+         Interstitial%plyr         = clear_val
+         Interstitial%qlyr         = clear_val
+         Interstitial%raddt        = clear_val
+         Interstitial%scmpsw%uvbfc = clear_val
+         Interstitial%scmpsw%uvbf0 = clear_val
+         Interstitial%scmpsw%nirbm = clear_val
+         Interstitial%scmpsw%nirdf = clear_val
+         Interstitial%scmpsw%visbm = clear_val
+         Interstitial%scmpsw%visdf = clear_val
+         Interstitial%sfcalb       = clear_val
+         Interstitial%tlvl         = clear_val
+         Interstitial%tlyr         = clear_val
+         Interstitial%tsfa         = clear_val
+         Interstitial%tsfg         = clear_val
+    else    !do_hwrfrrtmg
+         Interstitial%qv_r         = clear_val
+         Interstitial%qc_r         = clear_val
+         Interstitial%qi_r         = clear_val
+         Interstitial%qr_r         = clear_val
+         Interstitial%qs_r         = clear_val
+         Interstitial%qg_r         = clear_val
+         Interstitial%rthraten     = clear_val
+         Interstitial%rthratenlw   = clear_val
+         Interstitial%rthratensw   = clear_val
+         Interstitial%cldfra       = clear_val
+         Interstitial%xlong        = clear_val
+         Interstitial%ozmixm       = clear_val
+         Interstitial%pin          = clear_val
+         Interstitial%aerodm       = clear_val
+         Interstitial%pina         = clear_val
+         Interstitial%albedo       = clear_val
+         Interstitial%sm           = clear_val 
+         Interstitial%rlwtt        = clear_val
+         Interstitial%rswtt        = clear_val
+         Interstitial%rswinc       = clear_val
+         Interstitial%rlwtoa       = clear_val
+         Interstitial%czmean       = clear_val 
+         Interstitial%sice         = clear_val 
+         Interstitial%re_cloud     = clear_val
+         Interstitial%re_ice       = clear_val
+         Interstitial%re_snow      = clear_val 
+         Interstitial%hrswpd       = clear_val 
+         Interstitial%hrlwpd       = clear_val
+         Interstitial%hrlwpd       = clear_val
+         Interstitial%swupt        = clear_val 
+         Interstitial%swuptc       = clear_val 
+         Interstitial%swdnt        = clear_val 
+         Interstitial%swdntc       = clear_val
+         Interstitial%swupb        = clear_val
+         Interstitial%swupbc       = clear_val
+         Interstitial%swdnb        = clear_val
+         Interstitial%swdnbc       = clear_val 
+         Interstitial%lwupt        = clear_val 
+         Interstitial%lwuptc       = clear_val 
+         Interstitial%lwdnt        = clear_val
+         Interstitial%lwdntc       = clear_val 
+         Interstitial%lwupb        = clear_val 
+         Interstitial%lwupbc       = clear_val 
+         Interstitial%lwdnb        = clear_val 
+         Interstitial%lwdnbc       = clear_val 
+         Interstitial%acswupt      = clear_val
+         Interstitial%acswuptc     = clear_val 
+         Interstitial%acswdnt      = clear_val 
+         Interstitial%acswdntc     = clear_val 
+         Interstitial%acswupb      = clear_val 
+         Interstitial%acswupbc     = clear_val 
+         Interstitial%acswdnb      = clear_val 
+         Interstitial%acswdnbc     = clear_val 
+         Interstitial%aclwupt      = clear_val 
+         Interstitial%aclwuptc     = clear_val 
+         Interstitial%aclwdnt      = clear_val 
+         Interstitial%aclwdntc     = clear_val 
+         Interstitial%aclwupb      = clear_val 
+         Interstitial%aclwupbc     = clear_val 
+         Interstitial%aclwdnb      = clear_val 
+         Interstitial%aclwdnbc     = clear_val 
+         Interstitial%swvisdir     = clear_val 
+         Interstitial%swvisdif     = clear_val 
+
+    endif
 
 ! F-A scheme
     if (Model%imp_physics == Model%imp_physics_fer_hires) then
-         Interstitial%qv_r       = clear_val
-         Interstitial%qc_r       = clear_val
-         Interstitial%qi_r       = clear_val
-         Interstitial%qr_r       = clear_val
-         Interstitial%qs_r       = clear_val
-         Interstitial%qg_r       = clear_val
-       if(Model%spec_adv) then
+       !if(Model%spec_adv) then
          Interstitial%f_ice     = clear_val
          Interstitial%f_rain    = clear_val
          Interstitial%f_rimef   = clear_val
          Interstitial%cwm       = clear_val
-       end if
+       !end if
     end if
 
     !
