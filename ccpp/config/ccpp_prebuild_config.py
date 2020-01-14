@@ -94,6 +94,12 @@ SCHEME_FILES_DEPENDENCIES = [
     'FV3/ccpp/physics/physics/module_mp_thompson.F90',
     'FV3/ccpp/physics/physics/module_mp_thompson_make_number_concentrations.F90',
     'FV3/ccpp/physics/physics/module_MP_FER_HIRES.F90',
+    'FV3/ccpp/physics/physics/HWRF_rrtmg_driver.F90',
+    'FV3/ccpp/physics/physics/module_ra_rrtmg_sw.F90',
+    'FV3/ccpp/physics/physics/module_ra_rrtmg_lw.F90',
+    'FV3/ccpp/physics/physics/RDTEMP.F',
+#temporary
+    'FV3/ccpp/physics/physics/module_model_constants.F',
     'FV3/ccpp/physics/physics/module_bl_mynn.F90',
     'FV3/ccpp/physics/physics/module_sf_mynn.F90',
     'FV3/ccpp/physics/physics/module_SF_JSFC.F90',
@@ -235,6 +241,9 @@ SCHEME_FILES = {
     'FV3/ccpp/physics/physics/sfc_nst.f'                         : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/sfc_ocean.F'                       : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/sfc_sice.f'                        : [ 'slow_physics' ],
+    'FV3/ccpp/physics/physics/HWRF_radiation_pre.F90'            : [ 'slow_physics' ],
+    'FV3/ccpp/physics/physics/module_HWRF_radiation.F'           : [ 'slow_physics' ],
+    'FV3/ccpp/physics/physics/HWRF_radiation_post.F90'           : [ 'slow_physics' ],
     # HAFS FER_HIRES
     'FV3/ccpp/physics/physics/mp_fer_hires.F90'                  : [ 'slow_physics' ],
     # for testing the <init> and <finalize> sections

@@ -3877,25 +3877,25 @@
 [levsiz]
   standard_name = number_of_ozone_data_levels_for_CAM_radiation
   long_name = number of ozone data levels for CAM radiation (59)
-  units = counts
+  units = count
   dimensions = ()
   type = integer
 [n_ozmixm]
   standard_name = number_of_CAM_ozone_data_months
   long_name = number of CAM ozone data months
-  units = counts
+  units = count
   dimensions = ()
   type = integer
 [alevsiz]
   standard_name = number_of_Tegen_aerosol_optical_depth_data_levels
   long_name = number of Tegen aerosol optical depth data levels (12)
-  units = counts
+  units = count
   dimensions = ()
   type = integer
 [no_src_types]
   standard_name = number_of_EC_aerosol_types
   long_name = number of aerosol types from EC (6)
-  units = counts
+  units = count
   dimensions = ()
   type = integer
 [NPHS]
@@ -4380,7 +4380,7 @@
 [n_ozmixm_m1]
   standard_name = number_of_CAM_ozone_data_months_minus_one
   long_name = number of CAM ozone data months minus one
-  units = counts
+  units = count
   dimensions = ()
   type = integer
 [has_reqc]
@@ -4497,7 +4497,7 @@
   type = real
   kind = kind_phys
 [CZMEAN]
-  standard_name = mean_cosine_of_zenith_angle_between_SW_radition_calls
+  standard_name = mean_cosine_of_zenith_angle_between_SW_radiation_calls
   long_name = mean cos of zenith angle over rad call period
   units = none
   dimensions = (horizontal_dimension)
@@ -6335,8 +6335,8 @@
   type = real
   kind = kind_phys
 [qg_r]
-  standard_name = mass_weighted_rime_factor_mixing_ratio
-  long_name = the ratio of the mass of rime factor to mass of dry air
+  standard_name = cloud_graupel_mixing_ratio
+  long_name = the ratio of the mass of graupel to the mass of dry air
   units = kg kg-1
   dimensions = (horizontal_dimension,vertical_dimension)
   type = real
