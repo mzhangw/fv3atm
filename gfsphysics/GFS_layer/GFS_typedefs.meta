@@ -3880,6 +3880,12 @@
   units = count
   dimensions = ()
   type = integer
+[paerlev]
+  standard_name = number_of_aerosol_data_levels_for_CAM_radiation
+  long_name = number of aerosol data levels for CAM radiation (29)
+  units = count
+  dimensions = ()
+  type = integer
 [n_ozmixm]
   standard_name = number_of_CAM_ozone_data_months
   long_name = number of CAM ozone data months
@@ -3896,6 +3902,18 @@
   standard_name = number_of_EC_aerosol_types
   long_name = number of aerosol types from EC (6)
   units = count
+  dimensions = ()
+  type = integer
+[o3input]
+  standard_name = flag_for_ozone_input_for_hwrf_rrtmg 
+  long_name = ozone input option for radiation (currently hwrf rrtmg only)
+  units = flag  
+  dimensions = ()
+  type = integer
+[aer_opt]
+  standard_name = flag_for_aerosol_input_for_hwrf_rrtmg
+  long_name = aerosol input option for radiation (currently hwrf rrtmg only)
+  units = flag
   dimensions = ()
   type = integer
 [NPHS]
@@ -3915,6 +3933,24 @@
   long_name = number of timesteps between calls to HWRF longwave radiation
   units = count
   dimensions = ()
+  type = integer
+[icloud]    
+  standard_name = flag_for_cloud_effect_to_the_optical_depth_in_hwrf_rrtmg
+  long_name = cloud effect to the optical depth in radiation
+  units = flag
+  dimensions = ()
+  type = integer
+[cldovrlp]
+  standard_name = flag_for_cloud_overlap_assumption_in_hwrf_rrtmg
+  long_name = flag for cloud overlap assumption in HWRF rrtmg
+  units = flag
+  dimensions = ()
+  type = integer
+[ra_call_offset]
+  standard_name = radiation_call_offset
+  long_name = radiation call offset
+  units = flag
+  dimensions = () 
   type = integer
 [do_mynnedmf]
   standard_name = do_mynnedmf
@@ -4406,6 +4442,55 @@
   long_name = CAM_ozone_mixing_ratio
   units = kg kg-1
   dimensions = (horizontal_dimension,number_of_ozone_data_levels_for_CAM_radiation, number_of_CAM_ozone_data_months)
+  type = real
+  kind = kind_phys
+[o3rad]
+  standard_name = ozone_3d_content_for_hwrf_rrtmg
+  long_name = radiation 3D ozone
+  units = ppmv
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[swddir]
+  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance
+  long_name = All-sky broadband surface direct horizontal irradiance
+  units = W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddni]
+  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance
+  long_name = All-sky broadband surface normal irradiance
+  dimensions = (horizontal_dimension)
+  units = W m-2
+  type = real
+  kind = kind_phys
+[swddif]
+  standard_name = surface_shortwave_broadband_downward_diffuse_irradiance
+  long_name = All-sky broadband surface diffuse irradiance
+  units =  W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddirc]
+  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance_assuming_clear_sky
+  long_name = clear-sky shortwave surface downward direct irradiance
+  units = W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddnic]
+  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance_assuming_clear_sky
+  long_name = clear-sky shortwave surface downward direct normal irradiance
+  units = W m -2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[hrang]
+  standard_name = solar_hour_angle
+  long_name = solar hour angle
+  units = radians
+  dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
 [pin]

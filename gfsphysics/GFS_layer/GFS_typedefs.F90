@@ -847,14 +847,29 @@ module GFS_typedefs
     integer              :: no_src_types    !< number of aerosol types from EC (6)
     integer              :: alevsiz         !< number of aerosol optical depth data levels from EC (12)
     integer              :: o3input         !< ozone input option for radiation (currently HWRF rrtmg only)
-                                            !!   = 0, using profile inside the code
-                                            !!   = 2, using CAM ozone data (ozone.formatted)
+                                            !!\n   = 0, using profile inside the code
+                                            !!\n   = 2, using CAM ozone data (ozone.formatted)
     integer              :: aer_opt         !< aerosol input option for radiation (currently HWRF rrtmg only)
-                                            !!   = 0, none
-                                            !!   = 1, using Tegen (1997) data
+                                            !!\n   = 0, none
+                                            !!\n   = 1, using Tegen (1997) data
     integer              :: nrads           !< fundamental timesteps between calls to NMM shortwave radiation 
     integer              :: nradl           !< fundamental timesteps between calls to NMM longwave radiation
     integer              :: nphs            !< fundamental timesteps between calls to NMM turbulence 
+    integer              :: icloud          !< cloud effect to the optical depth in radiation; this also controls
+                                            !! the cloud fraction options
+                                            !!\n   = 0, without cloud effect
+                                            !!\n   = 1, with cloud effect, and use cloud fraction option 1 (Xu-Randall method)
+                                            !!\n   = 2, with cloud effect, and use cloud fraction option 2 (0/1 based on theshold)
+                                            !!\n   = 3, with cloud effect, and use cloud fraction option 3 (Sundqvist et al.(1989))
+    integer              :: cldovrlp        !!< cloud overlap assumption 
+                                            !!\n   = 1, random overlap
+                                            !!\n   = 2, max/random overlap
+                                            !!\n   = 3, maximum overlap
+                                            !!\n   = 4, exponential overlap
+                                            !!\n   = 5, exp/random overlap
+    integer              :: ra_call_offset  !< radiation call offset
+                                            !!\n   = 0, no offset
+                                            !!\n   = -1, old offset
 #endif
     integer              :: nmtvr           !< number of topographic variables such as variance etc
                                             !< used in the GWD parameterization
@@ -1986,6 +2001,13 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: aclwdnbc(:)             => null()  !<
     real (kind=kind_phys), pointer :: swvisdir(:)             => null()  !<
     real (kind=kind_phys), pointer :: swvisdif(:)             => null()  !<
+    real (kind=kind_phys), pointer :: swddir(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swddni(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swddif(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swddirc(:)              => null()  !<
+    real (kind=kind_phys), pointer :: swddnic(:)              => null()  !<
+    real (kind=kind_phys), pointer :: hrang(:)                => null()  !<
+    real (kind=kind_phys), pointer :: o3rad(:,:)        => null()  !<
 
     !-- Ferrier-Aligo MP scheme
     real (kind=kind_phys), pointer :: f_rain     (:,:)   => null()  !<
@@ -3029,6 +3051,9 @@ module GFS_typedefs
                                                                       !! longwave radiation; radt will be computed from this
     integer              :: nphs           = 1                        !! for HWRF physics: number of fundamental timesteps between calls to
                                                                       !! turbulence and microphysics 
+    integer              :: icloud         = 3                        
+    integer              :: cldovrlp       = 4
+    integer              :: ra_call_offset = -1
 
 #endif
 !mz*
@@ -3263,7 +3288,7 @@ module GFS_typedefs
                           !--- HWRF RRTMG
                                do_hwrfrrtmg, do_gfsrrtmg,                                   &
                                levsiz, paerlev, no_src_types, alevsiz, o3input, aer_opt,    &
-                               nrads, nradl, nphs,                                          &
+                               nrads, nradl, nphs, icloud, cldovrlp, ra_call_offset,        &
 #endif
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
@@ -3535,6 +3560,9 @@ module GFS_typedefs
     Model%nrads            = nrads
     Model%nradl            = nradl
     Model%nphs             = nphs
+    Model%icloud           = icloud
+    Model%cldovrlp         = cldovrlp
+    Model%ra_call_offset   = ra_call_offset
 #endif 
 
 !--- gfdl  MP parameters
@@ -4721,6 +4749,9 @@ module GFS_typedefs
       print *, ' nrads             : ', Model%nrads
       print *, ' nradl             : ', Model%nradl
       print *, ' nphs              : ', Model%nphs
+      print *, ' icloud            : ', Model%icloud
+      print *, ' cldovrlp          : ', Model%cldovrlp
+      print *, ' ra_call_offset    : ', Model%ra_call_offset
 #endif
       print *, ' '
       print *, 'Rayleigh friction'
@@ -6166,6 +6197,13 @@ module GFS_typedefs
        allocate (Interstitial%aclwdnbc    (IM))
        allocate (Interstitial%swvisdir    (IM))
        allocate (Interstitial%swvisdif    (IM))
+       allocate (Interstitial%o3rad       (IM,Model%levs))
+       allocate (Interstitial%swddir      (IM))
+       allocate (Interstitial%swddni      (IM))
+       allocate (Interstitial%swddif      (IM))
+       allocate (Interstitial%swddirc     (IM))
+       allocate (Interstitial%swddnic     (IM))
+       allocate (Interstitial%hrang       (IM))
 
      endif
 
@@ -6485,6 +6523,13 @@ module GFS_typedefs
          Interstitial%aclwdnbc     = clear_val 
          Interstitial%swvisdir     = clear_val 
          Interstitial%swvisdif     = clear_val 
+         Interstitial%o3rad        = clear_val
+         Interstitial%swddir       = clear_val
+         Interstitial%swddni       = clear_val
+         Interstitial%swddif       = clear_val
+         Interstitial%swddirc      = clear_val
+         Interstitial%swddnic      = clear_val
+         Interstitial%hrang        = clear_val
 
     endif
 
