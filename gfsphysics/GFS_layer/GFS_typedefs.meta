@@ -3886,12 +3886,6 @@
   units = count
   dimensions = ()
   type = integer
-[n_ozmixm]
-  standard_name = number_of_CAM_ozone_data_months
-  long_name = number of CAM ozone data months
-  units = count
-  dimensions = ()
-  type = integer
 [alevsiz]
   standard_name = number_of_Tegen_aerosol_optical_depth_data_levels
   long_name = number of Tegen aerosol optical depth data levels (12)
@@ -3908,6 +3902,18 @@
   standard_name = flag_for_ozone_input_for_hwrf_rrtmg 
   long_name = ozone input option for radiation (currently hwrf rrtmg only)
   units = flag  
+  dimensions = ()
+  type = integer
+[swint_opt]
+  standard_name = flag_for_HWRF_shortwave_interpolation_option
+  long_name = interpolation option for HWRF SW radiation
+  units = flag
+  dimensions = ()
+  type = integer
+[calc_clean_atm_diag]
+  standard_name = flag_for_HWRF_rrtmg_clean_sky_diagnostics
+  long_name = flag for HWRF RRTMG clean sky diagnostics
+  units = flag
   dimensions = ()
   type = integer
 [aer_opt]
@@ -4376,496 +4382,6 @@
   long_name = eff. radius of cloud graupel particle in micrometer
   units = um
   dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[rthraten]
-  standard_name = tendency_of_potential_temperature_due_to_radiative_heating_per_sec
-  long_name =  total sky radiative heating rate per sec
-  units = K s-1
-  dimensions = (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[RTHRATENLW]
-  standard_name = tendency_of_potential_temperature_due_to_longwave_heating_per_sec
-  long_name = total sky longwave radiative heating rate per sec
-  units = K s-1
-  dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[RTHRATENSW]
-  standard_name = tendency_of_potential_temperature_due_to_shortwave_heating_per_sec
-  long_name = total sky shortwave radiative heating rate per sec
-  units = K s-1
-  dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[CLDFRA]
-  standard_name = cloud_area_fraction_in_atmosphere_layer
-  long_name = cloud cover fraction in atmosphere layer
-  units = frac
-  dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[xlong]
-  standard_name = longitude_degree
-  long_name = longitude in degrees
-  units = degree
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[n_ozmixm_m1]
-  standard_name = number_of_CAM_ozone_data_months_minus_one
-  long_name = number of CAM ozone data months minus one
-  units = count
-  dimensions = ()
-  type = integer
-[has_reqc]
-  standard_name = flag_for_has_effective_radius_of_cloud_water
-  long_name = flag for has effective radius of cloud water
-  units = flag
-  dimensions = ()
-  type = integer
-[has_reqi]
-  standard_name = flag_for_has_effective_radius_of_cloud_ice
-  long_name = flag for has effective radius of cloud ice
-  units = flag
-  dimensions = ()
-  type = integer
-[has_reqs]
-  standard_name = flag_for_has_effective_radius_of_cloud_snow
-  long_name = flag for has effective radius of cloud snow
-  units = flag
-  dimensions = ()
-  type = integer
-[ozmixm]
-  standard_name = CAM_ozone_mixing_ratio
-  long_name = CAM_ozone_mixing_ratio
-  units = kg kg-1
-  dimensions = (horizontal_dimension,number_of_ozone_data_levels_for_CAM_radiation, number_of_CAM_ozone_data_months)
-  type = real
-  kind = kind_phys
-[o3rad]
-  standard_name = ozone_3d_content_for_hwrf_rrtmg
-  long_name = radiation 3D ozone
-  units = ppmv
-  dimensions = (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[swddir]
-  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance
-  long_name = All-sky broadband surface direct horizontal irradiance
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[swddni]
-  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance
-  long_name = All-sky broadband surface normal irradiance
-  dimensions = (horizontal_dimension)
-  units = W m-2
-  type = real
-  kind = kind_phys
-[swddif]
-  standard_name = surface_shortwave_broadband_downward_diffuse_irradiance
-  long_name = All-sky broadband surface diffuse irradiance
-  units =  W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[swddirc]
-  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance_assuming_clear_sky
-  long_name = clear-sky shortwave surface downward direct irradiance
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[swddnic]
-  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance_assuming_clear_sky
-  long_name = clear-sky shortwave surface downward direct normal irradiance
-  units = W m -2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[hrang]
-  standard_name = solar_hour_angle
-  long_name = solar hour angle
-  units = radians
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[pin]
-  standard_name = pressure_levels_of_CAM_ozone_mixing_ratio
-  long_name = pressure levels of CAM ozone mixing ratio
-  units = millibar
-  dimensions = (number_of_ozone_data_levels_for_CAM_radiation)
-  type = real
-  kind = kind_phys
-[aerodm]
-  standard_name = Tegen_aerosol_optical_depth
-  long_name = Tegen aerosol optical depth
-  units = AOD Pa-1
-  dimensions = (horizontal_dimension, number_of_Tegen_aerosol_optical_depth_data_levels, number_of_CAM_ozone_data_months_minus_one, number_of_EC_aerosol_types )
-  type = real
-  kind = kind_phys
-[pina]
-  standard_name = pressure_levels_of_Tegen_aerosol_optical_depth
-  long_name = pressure levels of Tegen aerosol optical depth
-  units = millibar
-  dimensions = (number_of_Tegen_aerosol_optical_depth_data_levels)
-  type = real
-  kind = kind_phys
-[JULDAY]
-  standard_name = julian_day_in_integer
-  long_name = julian day in integer
-  units = days
-  dimensions = ()
-  type = integer
-[JULYR]
-  standard_name = julian_year_in_integer
-  long_name = julian year in integer
-  units = years
-  dimensions = ()
-  type = integer
-[XTIME]
-  standard_name = minute_since_simulation_start
-  long_name =
-  units =
-  dimensions = ()
-  type = real
-  kind = kind_phys
-[IHRST]
-  standard_name = gmt
-  long_name =
-  units =
-  dimensions = ()
-  type = integer
-[ALBEDO]
-  standard_name = surface_albedo
-  long_name = surface albedo
-  units = frac
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SM]
-  standard_name = sea_mask
-  long_name = sea mask; =1 for sea, =0 for land
-  units = flag
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[RLWTT]
-  standard_name = tendency_of_air_temperature_due_to_longwave_heating
-  long_name = tendency of air temperature due to longwave heating
-  units = K s-1
-  dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[RSWTT]
-  standard_name = tendency_of_air_temperature_due_to_shortwave_heating
-  long_name = tendency of air temperature due to shortwave heating
-  units = K s-1
-  dimensions = (horizontal_dimension,vertical_dimension)
-  type = real
-  kind = kind_phys
-[RSWINC]
-  standard_name = surface_downwelling_shortwave_flux_assuming_clear_sky
-  long_name = surface downwelling shortwave flux assuming clear sky at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[RLWTOA]
-  standard_name = toa_outgoing_longwave_flux
-  long_name = outgoing LW flux at top of atmosphere
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[CZMEAN]
-  standard_name = mean_cosine_of_zenith_angle_between_SW_radiation_calls
-  long_name = mean cos of zenith angle over rad call period
-  units = none
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SICE]
-  standard_name = sea_ice_mask
-  long_name = sea ice mask; =1 for sea ice, =0 for no sea ice
-  units = flag
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[re_cloud]
-  standard_name = effective_radius_of_stratiform_cloud_liquid_water_particle_in_meter
-  long_name = eff. radius of cloud liquid water particle in meter
-  units = m
-  dimensions = (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[re_ice]
-  standard_name = effective_radius_of_stratiform_cloud_ice_particle_in_meter
-  long_name = eff. radius of cloud ice water particle in meter
-  units = m
-  dimensions = (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[re_snow]
-  standard_name = effective_radius_of_stratiform_cloud_snow_particle_in_meter
-  long_name = effective radius of cloud snow particle in meter
-  units = m
-  dimensions = (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[hrswpd]
-  standard_name = shortwave_heating_rate_per_day
-  long_name = shortwave heating rate per day
-  units = K d-1
-  dimensions =  (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[hrlwpd]
-  standard_name = longwave_heating_rate_per_day
-  long_name = longwave heating rate perday
-  units = K d-1
-  dimensions =  (horizontal_dimension, vertical_dimension)
-  type = real
-  kind = kind_phys
-[SWUPT]
-  standard_name = toa_instantaneous_upwelling_shortwave_flux
-  long_name = instantaneous upwelling shortwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWUPTC]
-  standard_name = toa_instantaneous_upwelling_shortwave_flux_assuming_clear_sky
-  long_name = instantaneous upwelling clear sky shortwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWDNT]
-  standard_name = toa_instantaneous_downwelling_shortwave_flux
-  long_name = instantaneous downwelling shortwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWDNTC]
-  standard_name = toa_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
-  long_name = instantaneous downwelling shortwave flux assuming clear sky at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWUPB]
-  standard_name = surface_instantaneous_upwelling_shortwave_flux
-  long_name = surface upwelling shortwave flux at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWUPBC]
-  standard_name = surface_instantaneous_upwelling_shortwave_flux_assuming_clear_sky
-  long_name = nstantaneous surface upwelling shortwave flux assuming clear sky
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWDNB]
-  standard_name = surface_instantaneous_downwelling_shortwave_flux
-  long_name = surface downwelling shortwave flux at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWDNBC]
-  standard_name = surface_instantaneous_downwelling_shortwave_flux_assuming_clear_sky
-  long_name = surface downwelling shortwave flux assuming clear sky at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWUPT]
-  standard_name = toa_instantaneous_upwelling_longwave_flux
-  long_name = instantaneous upwelling longwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWUPTC]
-  standard_name = toa_instantaneous_upwelling_longwave_flux_assuming_clear_sky
-  long_name = instantaneous upwelling clear sky longwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWDNT]
-  standard_name = toa_instantaneous_downwelling_longwave_flux
-  long_name = instantaneous downwelling longwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWDNTC]
-  standard_name = toa_instantaneous_downwelling_longwave_flux_assuming_clear_sky
-  long_name = instantaneous downwelling clear sky longwave flux at TOA
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWUPB]
-  standard_name = surface_instantaneous_upwelling_longwave_flux
-  long_name = instantaneous upwelling longwave flux at bottom
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWUPBC]
-  standard_name = surface_instantaneous_upwelling_longwave_flux_assuming_clear_sky
-  long_name = instantaneous upwelling longwave flux at bottom assuming clear sky
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWDNB]
-  standard_name = surface_instantaneous_downwelling_longwave_flux
-  long_name = instantaneous downwelling longwave flux at bottom
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[LWDNBC]
-  standard_name = surface_instantaneous_downwelling_longwave_flux_assuming_clear_sky
-  long_name = instantaneous downwelling longwave flux at bottom assuming clear sky
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWUPT]
-  standard_name = toa_upwelling_shortwave_flux_accumulated_in_radiation_time_step
-  long_name = upwelling shortwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWUPTC]
-  standard_name = toa_upwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = upwelling clear sky shortwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWDNT]
-  standard_name = toa_downwelling_shortwave_flux_accumulated_in_radiation_time_step
-  long_name = downwelling shortwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWDNTC]
-  standard_name = toa_downwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = downwelling clear sky shortwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWUPB]
-  standard_name = surface_upwelling_shortwave_flux_accumulated_in_radiation_time_step
-  long_name = upwelling shortwave flux at bottom accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWUPBC]
-  standard_name = surface_upwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = upwelling shortwave flux at bottom assuming clear sky accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWDNB]
-  standard_name = surface_downwelling_shortwave_flux_accumulated_in_radiation_time_step
-  long_name = downwelling shortwave flux at bottom accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACSWDNBC]
-  standard_name = surface_downwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = downwelling shortwave flux at bottom assuming clear sky accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWUPT]
-  standard_name = toa_upwelling_longwave_flux_accumulated_in_radiation_time_step
-  long_name = upwelling longwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWUPTC]
-  standard_name = toa_upwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = upwelling clear sky longwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWDNT]
-  standard_name = toa_downwelling_longwave_flux_accumulated_in_radiation_time_step
-  long_name = downwelling longwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWDNTC]
-  standard_name = toa_downwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = downwelling clear sky longwave flux at TOA accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWUPB]
-  standard_name = surface_upwelling_longwave_flux_accumulated_in_radiation_time_step
-  long_name = instantaneous upwelling longwave flux at bottom accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWUPBC]
-  standard_name = surface_upwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = upwelling longwave flux at bottom assuming clear sky accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWDNB]
-  standard_name = surface_downwelling_longwave_flux_accumulated_in_radiation_time_step
-  long_name = downwelling longwave flux at bottom accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[ACLWDNBC]
-  standard_name = surface_downwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
-  long_name = downwelling longwave flux at bottom assuming clear sky accumulated in radiation time step
-  units = J m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWVISDIR]
-  standard_name = surface_downwelling_direct_visible_shortwave_flux
-  long_name = surface downwelling direct visible shortwave flux at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
-[SWVISDIF]
-  standard_name = surface_downwelling_diffuse_visible_shortwave_flux
-  long_name = surface downwelling diffuse visible shortwave flux at current time
-  units = W m-2
-  dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
 [htlwc]
@@ -6384,6 +5900,558 @@
 [ccpp-arg-table]
   name = GFS_interstitial_type
   type = ddt
+[IHRST]
+  standard_name = gmt
+  long_name =
+  units =
+  dimensions = ()
+  type = integer
+[ALBEDO]
+  standard_name = surface_albedo
+  long_name = surface albedo
+  units = frac
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[SM]
+  standard_name = sea_mask
+  long_name = sea mask; =1 for sea, =0 for land
+  units = flag
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[re_cloud]
+  standard_name = effective_radius_of_stratiform_cloud_liquid_water_particle_in_meter
+  long_name = eff. radius of cloud liquid water particle in meter
+  units = m
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[re_ice]
+  standard_name = effective_radius_of_stratiform_cloud_ice_particle_in_meter
+  long_name = eff. radius of cloud ice water particle in meter
+  units = m
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[re_snow]
+  standard_name = effective_radius_of_stratiform_cloud_snow_particle_in_meter
+  long_name = effective radius of cloud snow particle in meter
+  units = m
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[CLDFRA]
+  standard_name = cloud_area_fraction_in_atmosphere_layer
+  long_name = cloud cover fraction in atmosphere layer
+  units = frac
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[xlong]
+  standard_name = longitude_degree
+  long_name = longitude in degrees
+  units = degree
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[n_ozmixm_m1]
+  standard_name = number_of_CAM_ozone_data_months_minus_one
+  long_name = number of CAM ozone data months minus one
+  units = count
+  dimensions = ()
+  type = integer
+[has_reqc]
+  standard_name = flag_for_has_effective_radius_of_cloud_water
+  long_name = flag for has effective radius of cloud water
+  units = flag
+  dimensions = ()
+  type = integer
+[has_reqi]
+  standard_name = flag_for_has_effective_radius_of_cloud_ice                                       
+  long_name = flag for has effective radius of cloud ice                                           
+  units = flag                                                                                     
+  dimensions = ()                                                                                  
+  type = integer                                                                                   
+[has_reqs]                                                                                         
+  standard_name = flag_for_has_effective_radius_of_cloud_snow                                      
+  long_name = flag for has effective radius of cloud snow                                          
+  units = flag                                                                                     
+  dimensions = ()                                                                                  
+  type = integer                                                                                   
+[ozmixm]                                                                                           
+  standard_name = CAM_ozone_mixing_ratio                                                           
+  long_name = CAM ozone mixing ratio                                                               
+  units = kg kg-1                                                                                  
+  dimensions = (horizontal_dimension,number_of_ozone_data_levels_for_CAM_radiation, number_of_CAM_ozone_data_months)
+  type = real                                                                                      
+  kind = kind_phys                  
+[pin]                                                                                              
+  standard_name = pressure_levels_of_CAM_ozone_mixing_ratio                                        
+  long_name = pressure levels of CAM ozone mixing ratio                                            
+  units = millibar                                                                                 
+  dimensions = (number_of_ozone_data_levels_for_CAM_radiation)                                     
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[aerodm]                                                                                           
+  standard_name = Tegen_aerosol_optical_depth                                                      
+  long_name = Tegen aerosol optical depth                                                          
+  units = AOD Pa-1                                                                                 
+  dimensions = (horizontal_dimension, number_of_Tegen_aerosol_optical_depth_data_levels, number_of_CAM_ozone_data_months_minus_one, number_of_EC_aerosol_types)
+  type = real
+  kind = kind_phys                                                                                 
+[pina] 
+  standard_name = pressure_levels_of_Tegen_aerosol_optical_depth                                   
+  long_name = pressure levels of Tegen aerosol optical depth
+  units = millibar
+  dimensions = (number_of_Tegen_aerosol_optical_depth_data_levels)                                 
+  type = real
+  kind = kind_phys                     
+[hrang]
+  standard_name = solar_hour_angle
+  long_name = solar hour angle
+  units = radians
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[JULDAY]
+  standard_name = julian_day_in_integer
+  long_name = julian day in integer
+  units = days
+  dimensions = ()
+  type = integer
+[JULYR]
+  standard_name = julian_year_in_integer
+  long_name = julian year in integer
+  units = years
+  dimensions = ()
+  type = integer
+[XTIME]
+  standard_name = minute_since_simulation_start
+  long_name =
+  units =
+  dimensions = ()                                                                                  
+  type = real                                                                                      
+  kind = kind_phys               
+[o3rad]
+  standard_name = ozone_3d_content_for_hwrf_rrtmg
+  long_name = radiation 3D ozone
+  units = ppmv
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[swddir]
+  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance
+  long_name = All-sky broadband surface direct horizontal irradiance
+  units = W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddni]
+  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance
+  long_name = All-sky broadband surface normal irradiance
+  dimensions = (horizontal_dimension)
+  units = W m-2
+  type = real
+  kind = kind_phys
+[swddif]
+  standard_name = surface_shortwave_broadband_downward_diffuse_irradiance
+  long_name = All-sky broadband surface diffuse irradiance
+  units =  W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddirc]
+  standard_name = surface_shortwave_broadband_downward_direct_horizontal_irradiance_assuming_clear_sky
+  long_name = clear-sky shortwave surface downward direct irradiance
+  units = W m-2
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
+[swddnic]                                                                                          
+  standard_name = surface_shortwave_broadband_downward_direct_normal_irradiance_assuming_clear_sky 
+  long_name = clear-sky shortwave surface downward direct normal irradiance                        
+  units = W m -2                                                                                   
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[RLWTT]                                                                                            
+  standard_name = tendency_of_air_temperature_due_to_longwave_heating                              
+  long_name = tendency of air temperature due to longwave heating                                  
+  units = K s-1                                                                                    
+  dimensions = (horizontal_dimension,vertical_dimension)                                           
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[RSWTT]                                                                                            
+  standard_name = tendency_of_air_temperature_due_to_shortwave_heating                             
+  long_name = tendency of air temperature due to shortwave heating                                 
+  units = K s-1                                                                                    
+  dimensions = (horizontal_dimension,vertical_dimension)                                           
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[RSWINC]                                                                                           
+  standard_name = surface_downwelling_shortwave_flux_assuming_clear_sky                            
+  long_name = surface downwelling shortwave flux assuming clear sky at current time                
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[RLWTOA]                                                                                           
+  standard_name = toa_outgoing_longwave_flux                                                       
+  long_name = outgoing LW flux at top of atmosphere                                                
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                            
+[CZMEAN]                                                                                           
+  standard_name = mean_cosine_of_zenith_angle_between_SW_radiation_calls                           
+  long_name = mean cos of zenith angle over rad call period                                        
+  units = none                                                                                     
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SICE]                                                                                             
+  standard_name = sea_ice_mask                                                                     
+  long_name = sea ice mask; =1 for sea ice, =0 for no sea ice                                      
+  units = flag                                                                                     
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[hrswpd]                                                                                           
+  standard_name = shortwave_heating_rate_per_day                                                   
+  long_name = shortwave heating rate per day                                                       
+  units = K d-1                                                                                    
+  dimensions =  (horizontal_dimension, vertical_dimension)                                         
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[hrlwpd]                                                                                           
+  standard_name = longwave_heating_rate_per_day                                                    
+  long_name = longwave heating rate per day                                                        
+  units = K d-1                                                                                    
+  dimensions =  (horizontal_dimension, vertical_dimension)                                         
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWUPT]                                                                                            
+  standard_name = toa_instantaneous_upwelling_shortwave_flux                                       
+  long_name = instantaneous upwelling shortwave flux at TOA                                        
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                 
+[SWUPTC]                                                                                           
+  standard_name = toa_instantaneous_upwelling_shortwave_flux_assuming_clear_sky                    
+  long_name = instantaneous upwelling clear sky shortwave flux at TOA                              
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWUPTCLN]                                                                                         
+  standard_name = toa_instantaneous_upwelling_shortwave_flux_assuming_clean_sky                    
+  long_name = instantaneous upwelling clean sky shortwave flux at TOA                              
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWDNT]                                                                                            
+  standard_name = toa_instantaneous_downwelling_shortwave_flux                                     
+  long_name = instantaneous downwelling shortwave flux at TOA                                      
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWDNTC]                                                                                           
+  standard_name = toa_instantaneous_downwelling_shortwave_flux_assuming_clear_sky                  
+  long_name = instantaneous downwelling shortwave flux assuming clear sky at TOA                   
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWDNTCLN]                                                                                         
+  standard_name = toa_instantaneous_downwelling_shortwave_flux_assuming_clean_sky                  
+  long_name = instantaneous downwelling clean sky shortwave flux at TOA                            
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                         
+[SWUPB]                                                                                            
+  standard_name = surface_instantaneous_upwelling_shortwave_flux                                   
+  long_name = surface upwelling shortwave flux at current time                                     
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWUPBC]                                                                                           
+  standard_name = surface_instantaneous_upwelling_shortwave_flux_assuming_clear_sky                
+  long_name = nstantaneous surface upwelling shortwave flux assuming clear sky                     
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWUPBCLN]                                                                                         
+  standard_name = surface_instantaneous_upwelling_shortwave_flux_assuming_clean_sky                
+  long_name = surface upwelling shortwave flux assuming clean sky                                  
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWDNB]                                                                                            
+  standard_name = surface_instantaneous_downwelling_shortwave_flux                                 
+  long_name = surface downwelling shortwave flux at current time                                   
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWDNBC]                                                                                           
+  standard_name = surface_instantaneous_downwelling_shortwave_flux_assuming_clear_sky              
+  long_name = surface downwelling shortwave flux assuming clear sky at current time                
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                     
+[SWDNBCLN]                                                                                         
+  standard_name = surface_instantaneous_downwelling_shortwave_flux_assuming_clean_sky              
+  long_name = surface downwelling shortwave flux assuming clean sky at current time                
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPT]                                                                                            
+  standard_name = toa_instantaneous_upwelling_longwave_flux                                        
+  long_name = instantaneous upwelling longwave flux at TOA                                         
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPTC]                                                                                           
+  standard_name = toa_instantaneous_upwelling_longwave_flux_assuming_clear_sky                     
+  long_name = instantaneous upwelling clear sky longwave flux at TOA                               
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPTCLN]                                                                                         
+  standard_name = toa_instantaneous_upwelling_longwave_flux_assuming_clean_sky                     
+  long_name = instantaneous upwelling clean sky longwave flux at TOA                               
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWDNT]                                                                                            
+  standard_name = toa_instantaneous_downwelling_longwave_flux                                      
+  long_name = instantaneous downwelling longwave flux at TOA                                       
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                
+[LWDNTC]                                                                                           
+  standard_name = toa_instantaneous_downwelling_longwave_flux_assuming_clear_sky                   
+  long_name = instantaneous downwelling clear sky longwave flux at TOA                             
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWDNTCLN]                                                                                         
+  standard_name = toa_instantaneous_downwelling_longwave_flux_assuming_clean_sky                   
+  long_name = instantaneous downwelling clean sky longwave flux at TOA                             
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPB]                                                                                            
+  standard_name = surface_instantaneous_upwelling_longwave_flux                                    
+  long_name = instantaneous upwelling longwave flux at bottom                                      
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPBC]                                                                                           
+  standard_name = surface_instantaneous_upwelling_longwave_flux_assuming_clear_sky                 
+  long_name = instantaneous upwelling longwave flux at bottom assuming clear sky                   
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWUPBCLN]                                                                                         
+  standard_name = surface_instantaneous_upwelling_longwave_flux_assuming_clean_sky                 
+  long_name = instantaneous upwelling longwave flux at bottom assuming clean sky                   
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                        
+[LWDNB]                                                                                            
+  standard_name = surface_instantaneous_downwelling_longwave_flux                                  
+  long_name = instantaneous downwelling longwave flux at bottom                                    
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWDNBC]                                                                                           
+  standard_name = surface_instantaneous_downwelling_longwave_flux_assuming_clear_sky               
+  long_name = instantaneous downwelling longwave flux at bottom assuming clear sky                 
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[LWDNBCLN]                                                                                         
+  standard_name = surface_instantaneous_downwelling_longwave_flux_assuming_clean_sky               
+  long_name = instantaneous downwelling longwave flux at bottom assuming clean sky                 
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWUPT]                                                                                          
+  standard_name = toa_upwelling_shortwave_flux_accumulated_in_radiation_time_step                  
+  long_name = upwelling shortwave flux at TOA accumulated in radiation time step                   
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWUPTC]                                                                                         
+  standard_name = toa_upwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = upwelling clear sky shortwave flux at TOA accumulated in radiation time step         
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                            
+[ACSWDNT]                                                                                          
+  standard_name = toa_downwelling_shortwave_flux_accumulated_in_radiation_time_step                
+  long_name = downwelling shortwave flux at TOA accumulated in radiation time step                 
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWDNTC]                                                                                         
+  standard_name = toa_downwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = downwelling clear sky shortwave flux at TOA accumulated in radiation time step       
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWUPB]                                                                                          
+  standard_name = surface_upwelling_shortwave_flux_accumulated_in_radiation_time_step              
+  long_name = upwelling shortwave flux at bottom accumulated in radiation time step                
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWUPBC]                                                                                         
+  standard_name = surface_upwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = upwelling shortwave flux at bottom assuming clear sky accumulated in radiation time step
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACSWDNB]                                                                                          
+  standard_name = surface_downwelling_shortwave_flux_accumulated_in_radiation_time_step            
+  long_name = downwelling shortwave flux at bottom accumulated in radiation time step              
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                               
+[ACSWDNBC]                                                                                         
+  standard_name = surface_downwelling_shortwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step       
+  long_name = downwelling shortwave flux at bottom assuming clear sky accumulated in radiation time step
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWUPT]                                                                                          
+  standard_name = toa_upwelling_longwave_flux_accumulated_in_radiation_time_step                   
+  long_name = upwelling longwave flux at TOA accumulated in radiation time step                    
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWUPTC]                                                                                         
+  standard_name = toa_upwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = upwelling clear sky longwave flux at TOA accumulated in radiation time step          
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWDNT]                                                                                          
+  standard_name = toa_downwelling_longwave_flux_accumulated_in_radiation_time_step                 
+  long_name = downwelling longwave flux at TOA accumulated in radiation time step                  
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWDNTC]                                                                                         
+  standard_name = toa_downwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = downwelling clear sky longwave flux at TOA accumulated in radiation time step        
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                   
+[ACLWUPB]                                                                                          
+  standard_name = surface_upwelling_longwave_flux_accumulated_in_radiation_time_step               
+  long_name = instantaneous upwelling longwave flux at bottom accumulated in radiation time step   
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWUPBC]                                                                                         
+  standard_name = surface_upwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step
+  long_name = upwelling longwave flux at bottom assuming clear sky accumulated in radiation time step
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWDNB]                                                                                          
+  standard_name = surface_downwelling_longwave_flux_accumulated_in_radiation_time_step             
+  long_name = downwelling longwave flux at bottom accumulated in radiation time step               
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[ACLWDNBC]                                                                                         
+  standard_name = surface_downwelling_longwave_flux_assuming_clear_sky_accumulated_in_radiation_time_step        
+  long_name = downwelling longwave flux at bottom assuming clear sky accumulated in radiation time step
+  units = J m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                                                                                 
+[SWVISDIR]                                                                                         
+  standard_name = surface_downwelling_direct_visible_shortwave_flux                                
+  long_name = surface downwelling direct visible shortwave flux at current time                    
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys                  
+[SWVISDIF]                                                                                         
+  standard_name = surface_downwelling_diffuse_visible_shortwave_flux                               
+  long_name = surface downwelling diffuse visible shortwave flux at current time                   
+  units = W m-2                                                                                    
+  dimensions = (horizontal_dimension)                                                              
+  type = real                                                                                      
+  kind = kind_phys   
+[rthraten]
+  standard_name = tendency_of_potential_temperature_due_to_radiative_heating_per_sec
+  long_name =  total sky radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension, vertical_dimension)
+  type = real
+  kind = kind_phys
+[RTHRATENLW]
+  standard_name = tendency_of_potential_temperature_due_to_longwave_heating_per_sec
+  long_name = total sky longwave radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[RTHRATENSW]
+  standard_name = tendency_of_potential_temperature_due_to_shortwave_heating_per_sec
+  long_name = total sky shortwave radiative heating rate per sec
+  units = K s-1
+  dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[n_ozmixm]
+  standard_name = number_of_CAM_ozone_data_months
+  long_name = number of CAM ozone data months
+  units = count
+  dimensions = ()
+  type = integer
 [qv_r]
   standard_name = humidity_mixing_ratio
   long_name = the ratio of the mass of water vapor to the mass of dry air

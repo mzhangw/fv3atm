@@ -242,7 +242,7 @@ SCHEME_FILES = {
     'FV3/ccpp/physics/physics/sfc_ocean.F'                       : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/sfc_sice.f'                        : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/HWRF_radiation_pre.F90'            : [ 'slow_physics' ],
-    'FV3/ccpp/physics/physics/module_HWRF_radiation.F'           : [ 'slow_physics' ],
+    'FV3/ccpp/physics/physics/module_HWRF_radiation.F90'         : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/HWRF_radiation_post.F90'           : [ 'slow_physics' ],
     # HAFS FER_HIRES
     'FV3/ccpp/physics/physics/mp_fer_hires.F90'                  : [ 'slow_physics' ],

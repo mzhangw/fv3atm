@@ -849,6 +849,8 @@ module GFS_typedefs
     integer              :: o3input         !< ozone input option for radiation (currently HWRF rrtmg only)
                                             !!\n   = 0, using profile inside the code
                                             !!\n   = 2, using CAM ozone data (ozone.formatted)
+    integer              :: swint_opt
+    integer              :: calc_clean_atm_diag
     integer              :: aer_opt         !< aerosol input option for radiation (currently HWRF rrtmg only)
                                             !!\n   = 0, none
                                             !!\n   = 1, using Tegen (1997) data
@@ -1969,20 +1971,28 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: hrlwpd(:,:)             => null()  !<
     real (kind=kind_phys), pointer :: swupt(:)                => null()  !<
     real (kind=kind_phys), pointer :: swuptc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swuptcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: swdnt(:)                => null()  !<
     real (kind=kind_phys), pointer :: swdntc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swdntcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: swupb(:)                => null()  !<
     real (kind=kind_phys), pointer :: swupbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swupbcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: swdnb(:)                => null()  !<
     real (kind=kind_phys), pointer :: swdnbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: swdnbcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: lwupt(:)                => null()  !<
     real (kind=kind_phys), pointer :: lwuptc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwuptcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: lwdnt(:)                => null()  !<
     real (kind=kind_phys), pointer :: lwdntc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwdntcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: lwupb(:)                => null()  !<
     real (kind=kind_phys), pointer :: lwupbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwupbcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: lwdnb(:)                => null()  !<
     real (kind=kind_phys), pointer :: lwdnbc(:)               => null()  !<
+    real (kind=kind_phys), pointer :: lwdnbcln(:)             => null()  !<
     real (kind=kind_phys), pointer :: acswupt(:)              => null()  !<
     real (kind=kind_phys), pointer :: acswuptc(:)             => null()  !<
     real (kind=kind_phys), pointer :: acswdnt(:)              => null()  !< 
@@ -3042,6 +3052,8 @@ module GFS_typedefs
     integer              :: o3input        = 2                        !< ozone input option for HWRF RRTMG only
                                                                       !<      0: using profile inside the code
                                                                       !<      2: using CAM ozone data (ozone.formatted) 
+    integer              :: swint_opt      =  0
+    integer              :: calc_clean_atm_diag =0
     integer              :: aer_opt        = 1                        !< aerosol input option for HWRF RRTMG only
                                                                       !<      0: none
                                                                       !<      1: using Tegen (1997) data
@@ -3289,6 +3301,7 @@ module GFS_typedefs
                                do_hwrfrrtmg, do_gfsrrtmg,                                   &
                                levsiz, paerlev, no_src_types, alevsiz, o3input, aer_opt,    &
                                nrads, nradl, nphs, icloud, cldovrlp, ra_call_offset,        &
+                               swint_opt, calc_clean_atm_diag,                              &
 #endif
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
@@ -3556,6 +3569,8 @@ module GFS_typedefs
     Model%no_src_types     = no_src_types
     Model%alevsiz          = alevsiz
     Model%o3input          = o3input
+    Model%swint_opt        = swint_opt
+    Model%calc_clean_atm_diag  = calc_clean_atm_diag
     Model%aer_opt          = aer_opt
     Model%nrads            = nrads
     Model%nradl            = nradl
@@ -4745,6 +4760,8 @@ module GFS_typedefs
       print *, ' no_src_types      : ', Model%no_src_types
       print *, ' alevsiz           : ', Model%alevsiz
       print *, ' o3input           : ', Model%o3input
+      print *, ' swint_opt         : ', Model%swint_opt
+      print *, ' calc_clean_atm_diag     : ', Model%calc_clean_atm_diag
       print *, ' aer_opt           : ', Model%aer_opt
       print *, ' nrads             : ', Model%nrads
       print *, ' nradl             : ', Model%nradl
@@ -6162,23 +6179,30 @@ module GFS_typedefs
        allocate (Interstitial%re_snow     (IM,Model%levs))
        allocate (Interstitial%hrswpd      (IM,Model%levs))
        allocate (Interstitial%hrlwpd      (IM,Model%levs))
-       allocate (Interstitial%hrlwpd      (IM,Model%levs))
        allocate (Interstitial%swupt       (IM))
        allocate (Interstitial%swuptc      (IM))
+       allocate (Interstitial%swuptcln    (IM))
        allocate (Interstitial%swdnt       (IM))
        allocate (Interstitial%swdntc      (IM))
+       allocate (Interstitial%swdntcln    (IM))
        allocate (Interstitial%swupb       (IM))
        allocate (Interstitial%swupbc      (IM))
+       allocate (Interstitial%swupbcln    (IM))
        allocate (Interstitial%swdnb       (IM))
        allocate (Interstitial%swdnbc      (IM))
+       allocate (Interstitial%swdnbcln    (IM))
        allocate (Interstitial%lwupt       (IM))
        allocate (Interstitial%lwuptc      (IM))
+       allocate (Interstitial%lwuptcln    (IM))
        allocate (Interstitial%lwdnt       (IM))
        allocate (Interstitial%lwdntc      (IM))
+       allocate (Interstitial%lwdntcln    (IM))
        allocate (Interstitial%lwupb       (IM))
        allocate (Interstitial%lwupbc      (IM))
+       allocate (Interstitial%lwupbcln    (IM))
        allocate (Interstitial%lwdnb       (IM))
        allocate (Interstitial%lwdnbc      (IM))
+       allocate (Interstitial%lwdnbcln    (IM))
        allocate (Interstitial%acswupt     (IM))
        allocate (Interstitial%acswuptc    (IM))
        allocate (Interstitial%acswdnt     (IM))
@@ -6423,7 +6447,7 @@ module GFS_typedefs
     type(GFS_control_type), intent(in) :: Model
     !
 
-    if (model%do_gfsrrtmg) then
+!    if (model%do_gfsrrtmg) then
          Interstitial%aerodp       = clear_val
          Interstitial%alb1d        = clear_val
          Interstitial%cldsa        = clear_val
@@ -6459,7 +6483,7 @@ module GFS_typedefs
          Interstitial%tlyr         = clear_val
          Interstitial%tsfa         = clear_val
          Interstitial%tsfg         = clear_val
-    else    !do_hwrfrrtmg
+      if(model%do_hwrfrrtmg) then    !do_hwrfrrtmg
          Interstitial%qv_r         = clear_val
          Interstitial%qc_r         = clear_val
          Interstitial%qi_r         = clear_val
@@ -6488,23 +6512,30 @@ module GFS_typedefs
          Interstitial%re_snow      = clear_val 
          Interstitial%hrswpd       = clear_val 
          Interstitial%hrlwpd       = clear_val
-         Interstitial%hrlwpd       = clear_val
          Interstitial%swupt        = clear_val 
          Interstitial%swuptc       = clear_val 
+         Interstitial%swuptcln     = clear_val
          Interstitial%swdnt        = clear_val 
          Interstitial%swdntc       = clear_val
+         Interstitial%swdntcln     = clear_val
          Interstitial%swupb        = clear_val
          Interstitial%swupbc       = clear_val
+         Interstitial%swupbcln     = clear_val
          Interstitial%swdnb        = clear_val
          Interstitial%swdnbc       = clear_val 
+         Interstitial%swdnbcln     = clear_val
          Interstitial%lwupt        = clear_val 
          Interstitial%lwuptc       = clear_val 
+         Interstitial%lwuptcln     = clear_val
          Interstitial%lwdnt        = clear_val
          Interstitial%lwdntc       = clear_val 
+         Interstitial%lwdntcln     = clear_val
          Interstitial%lwupb        = clear_val 
          Interstitial%lwupbc       = clear_val 
+         Interstitial%lwupbcln     = clear_val
          Interstitial%lwdnb        = clear_val 
          Interstitial%lwdnbc       = clear_val 
+         Interstitial%lwdnbcln     = clear_val
          Interstitial%acswupt      = clear_val
          Interstitial%acswuptc     = clear_val 
          Interstitial%acswdnt      = clear_val 
