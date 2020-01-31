@@ -1331,7 +1331,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: tsflw (:)    => null()  !< surface air temp during lw calculation in k 
     real (kind=kind_phys), pointer :: semis (:)    => null()  !< surface lw emissivity in fraction
 
-!--- In/Out (???) (radiaition only)
+!--- In/Out (???) (radiation only)
     real (kind=kind_phys), pointer :: coszdg(:)    => null()  !< daytime mean cosz over rad call period
 
 !--- In/Out (???) (physics only)
@@ -3057,9 +3057,9 @@ module GFS_typedefs
     integer              :: aer_opt        = 1                        !< aerosol input option for HWRF RRTMG only
                                                                       !<      0: none
                                                                       !<      1: using Tegen (1997) data
-    integer              :: nrads          = 90                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
+    integer              :: nrads          = 180                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
                                                                       !! shortwave radiation; radt will be computed from this  
-    integer              :: nradl          = 90                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
+    integer              :: nradl          = 180                       !< for HWRF RRTMG: number of fundamental timesteps between calls to 
                                                                       !! longwave radiation; radt will be computed from this
     integer              :: nphs           = 1                        !! for HWRF physics: number of fundamental timesteps between calls to
                                                                       !! turbulence and microphysics 

@@ -2880,6 +2880,18 @@
   units = flag
   dimensions = ()
   type = logical
+[do_hwrfrrtmg]
+  standard_name = flag_for_hwrf_rrtmg
+  long_name = flag for hwrf rrtmg
+  units = flag
+  dimensions = ()
+  type = logical
+[do_gfsrrtmg]
+  standard_name = flag_for_gfs_rrtmg
+  long_name = flag for gfs rrtmg
+  units = flag
+  dimensions = ()
+  type = logical
 [imfshalcnv]
   standard_name = flag_for_mass_flux_shallow_convection_scheme
   long_name = flag for mass-flux shallow convection scheme
@@ -6103,13 +6115,6 @@
   dimensions = (horizontal_dimension)                                                              
   type = real                                                                                      
   kind = kind_phys                                            
-[CZMEAN]                                                                                           
-  standard_name = mean_cosine_of_zenith_angle_between_SW_radiation_calls                           
-  long_name = mean cos of zenith angle over rad call period                                        
-  units = none                                                                                     
-  dimensions = (horizontal_dimension)                                                              
-  type = real                                                                                      
-  kind = kind_phys                                                                                 
 [SICE]                                                                                             
   standard_name = sea_ice_mask                                                                     
   long_name = sea ice mask; =1 for sea ice, =0 for no sea ice                                      
