@@ -5912,12 +5912,13 @@
 [ccpp-arg-table]
   name = GFS_interstitial_type
   type = ddt
-[IHRST]
-  standard_name = gmt
-  long_name =
-  units =
+[gmt]
+  standard_name = greenwich_mean_time_of_model_start
+  long_name = Greenwich mean time of model start in hour
+  units = hours
   dimensions = ()
-  type = integer
+  type = real
+  kind = kind_phys
 [ALBEDO]
   standard_name = surface_albedo
   long_name = surface albedo

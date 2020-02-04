@@ -1956,6 +1956,7 @@ module GFS_typedefs
     integer                        :: julyr
     real (kind=kind_phys)          :: xtime
     integer                        :: ihrst
+    real (kind=kind_phys)          :: gmt
     real (kind=kind_phys), pointer :: albedo(:)               => null()  !<
     real (kind=kind_phys), pointer :: sm(:)                   => null()  !<
     real (kind=kind_phys), pointer :: rlwtt(:,:)              => null()  !<
@@ -6484,6 +6485,10 @@ module GFS_typedefs
          Interstitial%tsfa         = clear_val
          Interstitial%tsfg         = clear_val
       if(model%do_hwrfrrtmg) then    !do_hwrfrrtmg
+!mz* date/time utilities, do not reset
+!         Interstitial%julyr        = clear_val
+!         Interstitial%julday       = clear_val
+!         Interstitial%gmt          = clear_val
          Interstitial%qv_r         = clear_val
          Interstitial%qc_r         = clear_val
          Interstitial%qi_r         = clear_val
