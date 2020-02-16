@@ -219,7 +219,7 @@ SCHEME_FILES = {
     'FV3/ccpp/physics/physics/ozphys.f'                          : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/ozphys_2015.f'                     : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/precpd.f'                          : [ 'slow_physics' ],
-    'FV3/ccpp/physics/physics/radlw_main.f'                      : [ 'slow_physics' ],
+    'FV3/ccpp/physics/physics/radlw_main.F90'                      : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/radsw_main.f'                      : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/rayleigh_damp.f'                   : [ 'slow_physics' ],
     'FV3/ccpp/physics/physics/rrtmg_lw_post.F90'                 : [ 'slow_physics' ],
