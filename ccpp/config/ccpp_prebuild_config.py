@@ -335,14 +335,6 @@ OPTIONAL_ARGUMENTS = {
             'rime_factor',
             ],
         },
-    'GFS_suite_stateout_update' : {
-        'GFS_suite_stateout_update_run' : [
-            'index_for_ice_cloud_condensate',
-            'index_for_mass_weighted_rime_factor',
-            ],
-        },
-
-
     #'subroutine_name_1' : 'all',
     #'subroutine_name_2' : 'none',
     #'subroutine_name_2' : [ 'var1', 'var3'],
