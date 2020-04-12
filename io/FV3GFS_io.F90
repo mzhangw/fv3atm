@@ -479,6 +479,7 @@ module FV3GFS_io_mod
     integer :: id_restart
     integer :: nvar_o2, nvar_s2m, nvar_s2o, nvar_s3
     integer :: nvar_s2mp, nvar_s3mp,isnow
+    integer :: nlakes
 #ifdef CCPP
     integer :: nvar_s2r
 #endif
@@ -504,6 +505,7 @@ module FV3GFS_io_mod
     data dzs   /0.1,0.3,0.6,1.0/
     data zsoil /-0.1,-0.4,-1.0,-2.0/
 
+    nlakes = 0
     
     if (Model%cplflx) then ! needs more variables
       nvar_s2m = 34
@@ -621,6 +623,7 @@ module FV3GFS_io_mod
         Sfcprop(nb)%oro_uf(ix)    = oro_var2(i,j,16)
         Sfcprop(nb)%landfrac(ix)  = oro_var2(i,j,17) !land frac [0:1]
         Sfcprop(nb)%lakefrac(ix)  = oro_var2(i,j,18) !lake frac [0:1]
+        Sfcprop(nb)%lakedepth(ix) = oro_var2(i,j,19) !lake depth [m]    !YWu
       enddo
     enddo
  
@@ -634,6 +637,8 @@ module FV3GFS_io_mod
     endif
 
     if (Model%me == Model%master ) write(0,*)' resetting Model%frac_grid=',Model%frac_grid
+
+!    Model%frac_grid = .false.     !YWu 2019
 
     !--- deallocate containers and free restart container
     deallocate(oro_name2, oro_var2)
@@ -902,6 +907,19 @@ module FV3GFS_io_mod
 !--- 2D variables
 !    ------------
         Sfcprop(nb)%slmsk(ix)  = sfc_var2(i,j,1)    !--- slmsk
+
+!        print*,'Sfcprop(nb)%slmsk(ix) = ', Sfcprop(nb)%slmsk(ix)
+        if(Sfcprop(nb)%slmsk(ix) == 5) then
+           nlakes = nlakes + 1
+        endif
+!        YWU 2020
+        if(Model%lkm.ne.1) then
+           if(Sfcprop(nb)%slmsk(ix) == 5) then
+              Sfcprop(nb)%slmsk(ix) = 0
+              Sfcprop(nb)%lakefrac(ix)=0.0
+           endif
+        endif
+!
         Sfcprop(nb)%tsfco(ix)  = sfc_var2(i,j,2)    !--- tsfc (tsea in sfc file)
         Sfcprop(nb)%weasd(ix)  = sfc_var2(i,j,3)    !--- weasd (sheleg in sfc file)
         Sfcprop(nb)%tg3(ix)    = sfc_var2(i,j,4)    !--- tg3
@@ -1103,6 +1121,9 @@ module FV3GFS_io_mod
 
       enddo   !ix
     enddo    !nb
+
+    print*,'nlakes= ',nlakes
+
     call mpp_error(NOTE, 'gfs_driver:: - after put to container ')
 
 ! so far: At cold start everything is 9999.0, warm start snowxy has values

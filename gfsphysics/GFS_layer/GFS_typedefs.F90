@@ -227,13 +227,15 @@ module GFS_typedefs
   type GFS_sfcprop_type
 
 !--- In (radiation and physics)
-    real (kind=kind_phys), pointer :: slmsk  (:)   => null()  !< sea/land mask array (sea:0,land:1,sea-ice:2)
+    real (kind=kind_phys), pointer :: slmsk  (:)   => null()  !< sea/land mask array (sea:0,land:1,sea-ice:2,lake-5)
     real (kind=kind_phys), pointer :: oceanfrac(:) => null()  !< ocean fraction [0:1]
     real (kind=kind_phys), pointer :: landfrac(:)  => null()  !< land  fraction [0:1]
     real (kind=kind_phys), pointer :: lakefrac(:)  => null()  !< lake  fraction [0:1]
+    real (kind=kind_phys), pointer :: lakedepth(:) => null()  !< lake  depth    [ m ]
     real (kind=kind_phys), pointer :: tsfc   (:)   => null()  !< surface air temperature in K
                                                               !< [tsea in gbphys.f]
     real (kind=kind_phys), pointer :: tsfco  (:)   => null()  !< sst in K
+    real (kind=kind_phys), pointer :: tsfclk (:)   => null()  !< surface lake temperature in K
     real (kind=kind_phys), pointer :: tsfcl  (:)   => null()  !< surface land temperature in K
     real (kind=kind_phys), pointer :: tisfc  (:)   => null()  !< surface temperature over ice fraction
     real (kind=kind_phys), pointer :: snowd  (:)   => null()  !< snow depth water equivalent in mm ; same as snwdph
@@ -241,6 +243,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: zorlo  (:)   => null()  !< ocean surface roughness in cm
     real (kind=kind_phys), pointer :: zorll  (:)   => null()  !< land surface roughness in cm
     real (kind=kind_phys), pointer :: fice   (:)   => null()  !< ice fraction over open water grid
+    real (kind=kind_phys), pointer :: fice_lk(:)   => null()  !< ice fraction over lake
 !   real (kind=kind_phys), pointer :: hprim  (:)   => null()  !< topographic standard deviation in m
     real (kind=kind_phys), pointer :: hprime (:,:) => null()  !< orographic metrics
 
@@ -271,6 +274,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: conv_act(:)  => null()  !< convective activity counter hli 09/2017
 #endif
     real (kind=kind_phys), pointer :: hice   (:)   => null()  !< sea ice thickness
+    real (kind=kind_phys), pointer :: hice_lk(:)   => null()  !< surface_ice_thickness_water_equivalent_over_lake
     real (kind=kind_phys), pointer :: weasd  (:)   => null()  !< water equiv of accumulated snow depth (kg/m**2)
                                                               !< over land and sea ice
     real (kind=kind_phys), pointer :: canopy (:)   => null()  !< canopy water
@@ -780,6 +784,9 @@ module GFS_typedefs
     integer              :: iopt_stc  !snow/soil temperature time scheme (only layer 1)
 
     logical              :: use_ufo         !< flag for gcycle surface option
+
+!--- flake model parameters
+    integer              :: lkm             !< flag for flake model
 
 !--- tuning parameters for physical parameterizations
     logical              :: ras             !< flag for ras convection scheme
@@ -1610,6 +1617,7 @@ module GFS_typedefs
   type GFS_interstitial_type
 
     real (kind=kind_phys), pointer      :: adjsfculw_land(:)  => null()  !<
+    real (kind=kind_phys), pointer      :: adjsfculw_lake(:)  => null()  !<
     real (kind=kind_phys), pointer      :: adjsfculw_ice(:)   => null()  !<
     real (kind=kind_phys), pointer      :: adjsfculw_ocean(:) => null()  !<
     real (kind=kind_phys), pointer      :: adjnirbmd(:)       => null()  !<
@@ -1626,14 +1634,17 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: cd(:)              => null()  !<
     real (kind=kind_phys), pointer      :: cd_ice(:)          => null()  !<
     real (kind=kind_phys), pointer      :: cd_land(:)         => null()  !<
+    real (kind=kind_phys), pointer      :: cd_lake(:)         => null()  !<
     real (kind=kind_phys), pointer      :: cd_ocean(:)        => null()  !<
     real (kind=kind_phys), pointer      :: cdq(:)             => null()  !<
     real (kind=kind_phys), pointer      :: cdq_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: cdq_land(:)        => null()  !<
+    real (kind=kind_phys), pointer      :: cdq_lake(:)        => null()  !<
     real (kind=kind_phys), pointer      :: cdq_ocean(:)       => null()  !<
     real (kind=kind_phys), pointer      :: cf_upi(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: chh_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: chh_land(:)        => null()  !<
+    real (kind=kind_phys), pointer      :: chh_lake(:)        => null()  !<
     real (kind=kind_phys), pointer      :: chh_ocean(:)       => null()  !<
     real (kind=kind_phys), pointer      :: clcn(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: cldf(:)            => null()  !<
@@ -1647,6 +1658,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: clx(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: cmm_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: cmm_land(:)        => null()  !<
+    real (kind=kind_phys), pointer      :: cmm_lake(:)        => null()  !<
     real (kind=kind_phys), pointer      :: cmm_ocean(:)       => null()  !<
     real (kind=kind_phys), pointer      :: cndm_surf(:)       => null()  !<
     real (kind=kind_phys), pointer      :: cnv_dqldt(:,:)     => null()  !<
@@ -1686,10 +1698,12 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: ep1d(:)            => null()  !<
     real (kind=kind_phys), pointer      :: ep1d_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: ep1d_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: ep1d_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: ep1d_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: evap(:)            => null()  !<
     real (kind=kind_phys), pointer      :: evap_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: evap_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: evap_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: evap_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: evbs(:)            => null()  !<
     real (kind=kind_phys), pointer      :: evcw(:)            => null()  !<
@@ -1697,28 +1711,34 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: faersw(:,:,:,:)    => null()  !<
     real (kind=kind_phys), pointer      :: ffhh_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: ffhh_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: ffhh_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: ffhh_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: fh2(:)             => null()  !<
     real (kind=kind_phys), pointer      :: fh2_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: fh2_land(:)        => null()  !<
+    real (kind=kind_phys), pointer      :: fh2_lake(:)        => null()  !<
     real (kind=kind_phys), pointer      :: fh2_ocean(:)       => null()  !<
     logical,               pointer      :: flag_cice(:)       => null()  !<
     logical,               pointer      :: flag_guess(:)      => null()  !<
     logical,               pointer      :: flag_iter(:)       => null()  !<
     real (kind=kind_phys), pointer      :: ffmm_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: ffmm_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: ffmm_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: ffmm_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: fm10(:)            => null()  !<
     real (kind=kind_phys), pointer      :: fm10_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: fm10_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: fm10_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: fm10_ocean(:)      => null()  !<
     real (kind=kind_phys)               :: frain                         !<
     real (kind=kind_phys), pointer      :: frland(:)          => null()  !<
+    real (kind=kind_phys), pointer      :: frlake(:)          => null()  !<
     real (kind=kind_phys), pointer      :: fscav(:)           => null()  !<
     real (kind=kind_phys), pointer      :: fswtr(:)           => null()  !<
     real (kind=kind_phys), pointer      :: gabsbdlw(:)        => null()  !<
     real (kind=kind_phys), pointer      :: gabsbdlw_ice(:)    => null()  !<
     real (kind=kind_phys), pointer      :: gabsbdlw_land(:)   => null()  !<
+    real (kind=kind_phys), pointer      :: gabsbdlw_lake(:)   => null()  !<
     real (kind=kind_phys), pointer      :: gabsbdlw_ocean(:)  => null()  !<
     real (kind=kind_phys), pointer      :: gamma(:)           => null()  !<
     real (kind=kind_phys), pointer      :: gamq(:)            => null()  !<
@@ -1727,6 +1747,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: gflx(:)            => null()  !<
     real (kind=kind_phys), pointer      :: gflx_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: gflx_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: gflx_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: gflx_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: graupelmp(:)       => null()  !<
     real (kind=kind_phys), pointer      :: gwdcu(:,:)         => null()  !<
@@ -1736,6 +1757,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: hflx(:)            => null()  !<
     real (kind=kind_phys), pointer      :: hflx_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: hflx_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: hflx_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: hflx_ocean(:)      => null()  !<
     !--- radiation variables that need to be carried over from radiation to physics
     real (kind=kind_phys), pointer      :: htlwc(:,:)         => null()  !<
@@ -1813,6 +1835,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: qss(:)             => null()  !<
     real (kind=kind_phys), pointer      :: qss_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: qss_land(:)        => null()  !<
+    real (kind=kind_phys), pointer      :: qss_lake(:)        => null()  !<
     real (kind=kind_phys), pointer      :: qss_ocean(:)       => null()  !<
     logical                             :: radar_reset                   !<
     real (kind=kind_phys)               :: raddt                         !<
@@ -1824,6 +1847,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: rb(:)              => null()  !<
     real (kind=kind_phys), pointer      :: rb_ice(:)          => null()  !<
     real (kind=kind_phys), pointer      :: rb_land(:)         => null()  !<
+    real (kind=kind_phys), pointer      :: rb_lake(:)         => null()  !<
     real (kind=kind_phys), pointer      :: rb_ocean(:)        => null()  !<
     logical                             :: reset                         !<
     real (kind=kind_phys), pointer      :: rhc(:,:)           => null()  !<
@@ -1836,6 +1860,7 @@ module GFS_typedefs
     type (cmpfsw_type),    pointer      :: scmpsw(:)          => null()  !<
     real (kind=kind_phys), pointer      :: semis_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: semis_land(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: semis_lake(:)      => null()  !<
     real (kind=kind_phys), pointer      :: semis_ocean(:)     => null()  !<
     real (kind=kind_phys), pointer      :: sfcalb(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: sigma(:)           => null()  !<
@@ -1847,6 +1872,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: snowc(:)           => null()  !<
     real (kind=kind_phys), pointer      :: snowd_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: snowd_land(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: snowd_lake(:)      => null()  !<
     real (kind=kind_phys), pointer      :: snowd_ocean(:)     => null()  !<
     real (kind=kind_phys), pointer      :: snohf(:)           => null()  !<
     real (kind=kind_phys), pointer      :: snowmp(:)          => null()  !<
@@ -1855,6 +1881,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: stress(:)          => null()  !<
     real (kind=kind_phys), pointer      :: stress_ice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: stress_land(:)     => null()  !<
+    real (kind=kind_phys), pointer      :: stress_lake(:)     => null()  !<
     real (kind=kind_phys), pointer      :: stress_ocean(:)    => null()  !<
     real (kind=kind_phys), pointer      :: t2mmp(:)           => null()  !<
     real (kind=kind_phys), pointer      :: theta(:)           => null()  !<
@@ -1863,6 +1890,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: tlyr(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: tprcp_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: tprcp_land(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: tprcp_lake(:)      => null()  !<
     real (kind=kind_phys), pointer      :: tprcp_ocean(:)     => null()  !<
     integer                             :: tracers_start_index           !<
     integer                             :: tracers_total                 !<
@@ -1873,16 +1901,24 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: tsfa(:)            => null()  !<
     real (kind=kind_phys), pointer      :: tsfc_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: tsfc_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: tsfc_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: tsfc_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: tsfg(:)            => null()  !<
     real (kind=kind_phys), pointer      :: tsnow(:)           => null()  !<
     real (kind=kind_phys), pointer      :: tsurf(:)           => null()  !<
     real (kind=kind_phys), pointer      :: tsurf_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: tsurf_land(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: tsurf_lake(:)      => null()  !<
     real (kind=kind_phys), pointer      :: tsurf_ocean(:)     => null()  !<
     real (kind=kind_phys), pointer      :: ud_mf(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: ulwsfc_cice(:)     => null()  !<
+    real (kind=kind_phys), pointer      :: dusfc_cice(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: dvsfc_cice(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: dqsfc_cice(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: dtsfc_cice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: uustar_ice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: uustar_land(:)     => null()  !<
+    real (kind=kind_phys), pointer      :: uustar_lake(:)     => null()  !<
     real (kind=kind_phys), pointer      :: uustar_ocean(:)    => null()  !<
     real (kind=kind_phys), pointer      :: vdftra(:,:,:)      => null()  !<
     real (kind=kind_phys), pointer      :: vegf1d(:)          => null()  !<
@@ -1891,6 +1927,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: wcbmax(:)          => null()  !<
     real (kind=kind_phys), pointer      :: weasd_ocean(:)     => null()  !<
     real (kind=kind_phys), pointer      :: weasd_land(:)      => null()  !<
+    real (kind=kind_phys), pointer      :: weasd_lake(:)      => null()  !<
     real (kind=kind_phys), pointer      :: weasd_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: wind(:)            => null()  !<
     real (kind=kind_phys), pointer      :: work1(:)           => null()  !<
@@ -1902,6 +1939,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: z01d(:)            => null()  !<
     real (kind=kind_phys), pointer      :: zorl_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: zorl_land(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: zorl_lake(:)       => null()  !<
     real (kind=kind_phys), pointer      :: zorl_ocean(:)      => null()  !<
     real (kind=kind_phys), pointer      :: zt1d(:)            => null()  !<
     real (kind=kind_phys), pointer      :: gw_dudt(:,:)       => null()  !<
@@ -2147,8 +2185,10 @@ module GFS_typedefs
     allocate (Sfcprop%oceanfrac(IM))
     allocate (Sfcprop%landfrac (IM))
     allocate (Sfcprop%lakefrac (IM))
+    allocate (Sfcprop%lakedepth(IM))
     allocate (Sfcprop%tsfc     (IM))
     allocate (Sfcprop%tsfco    (IM))
+    allocate (Sfcprop%tsfclk   (IM))
     allocate (Sfcprop%tsfcl    (IM))
     allocate (Sfcprop%tisfc    (IM))
     allocate (Sfcprop%snowd    (IM))
@@ -2156,6 +2196,7 @@ module GFS_typedefs
     allocate (Sfcprop%zorlo    (IM))
     allocate (Sfcprop%zorll    (IM))
     allocate (Sfcprop%fice     (IM))
+    allocate (Sfcprop%fice_lk  (IM))
 !   allocate (Sfcprop%hprim    (IM))
     allocate (Sfcprop%hprime   (IM,Model%nmtvr))
 
@@ -2163,8 +2204,10 @@ module GFS_typedefs
     Sfcprop%oceanfrac = clear_val
     Sfcprop%landfrac  = clear_val
     Sfcprop%lakefrac  = clear_val
+    Sfcprop%lakedepth = clear_val
     Sfcprop%tsfc      = clear_val
     Sfcprop%tsfco     = clear_val
+    Sfcprop%tsfclk    = clear_val
     Sfcprop%tsfcl     = clear_val
     Sfcprop%tisfc     = clear_val
     Sfcprop%snowd     = clear_val
@@ -2172,6 +2215,7 @@ module GFS_typedefs
     Sfcprop%zorlo     = clear_val
     Sfcprop%zorll     = clear_val
     Sfcprop%fice      = clear_val
+    Sfcprop%fice_lk   = clear_val
 !   Sfcprop%hprim     = clear_val
     Sfcprop%hprime    = clear_val
 
@@ -2222,6 +2266,7 @@ module GFS_typedefs
 
 !--- In/Out
     allocate (Sfcprop%hice   (IM))
+    allocate (Sfcprop%hice_lk(IM))
     allocate (Sfcprop%weasd  (IM))
     allocate (Sfcprop%sncovr (IM))
     allocate (Sfcprop%canopy (IM))
@@ -2235,6 +2280,7 @@ module GFS_typedefs
     allocate (Sfcprop%stc    (IM,Model%lsoil))
 
     Sfcprop%hice   = clear_val
+    Sfcprop%hice_lk = clear_val
     Sfcprop%weasd  = clear_val
     Sfcprop%sncovr = clear_val
     Sfcprop%canopy = clear_val
@@ -2670,7 +2716,7 @@ module GFS_typedefs
       Coupling%ca_turb   = clear_val
       Coupling%ca_shal   = clear_val
       Coupling%ca_rad    = clear_val
-      Coupling%ca_micro  = clear_val
+      Coupling%ca_micro  = clear_val   
       Coupling%cape      = clear_val
       Coupling%tconvtend = clear_val
       Coupling%qconvtend = clear_val
@@ -2975,6 +3021,9 @@ module GFS_typedefs
 
     logical              :: use_ufo        = .false.         !< flag for gcycle surface option
 
+!--- flake model parameters
+    integer              :: lkm            =  1  !< flag for flake model
+
 !--- tuning parameters for physical parameterizations
     logical              :: ras            = .false.                  !< flag for ras convection scheme
     logical              :: flipv          = .true.                   !< flag for vertical direction flip (ras)
@@ -3253,6 +3302,10 @@ module GFS_typedefs
                           !    Noah MP options
                                iopt_dveg,iopt_crs,iopt_btr,iopt_run,iopt_sfc, iopt_frz,     &
                                iopt_inf, iopt_rad,iopt_alb,iopt_snf,iopt_tbot,iopt_stc,     &
+
+                          !--- lake model control
+                               lkm,                                                         &
+
                           !--- physical parameterizations
                                ras, trans_trac, old_monin, cnvgwd, mstrat, moist_adj,       &
                                cscnv, cal_pre, do_aw, do_shoc, shocaftcnv, shoc_cld,        &
@@ -3598,6 +3651,9 @@ module GFS_typedefs
     Model%ivegsrc          = ivegsrc
     Model%isot             = isot
     Model%use_ufo          = use_ufo
+
+!--- flake  model parameters
+    Model%lkm             = lkm
 
 ! Noah MP options from namelist
 !
@@ -4131,6 +4187,10 @@ module GFS_typedefs
               ' frac_grid_off=',frac_grid_off,' ignore_lake=',ignore_lake
       print *,' min_lakeice=',Model%min_lakeice,' min_seaice=',Model%min_seaice,                &
               'min_lake_height=',Model%min_lake_height
+
+      print *, 'flake model parameters'
+      print *, 'lkm                : ', Model%lkm
+
       if (Model%nstf_name(1) > 0 ) then
         print *,' NSSTM is active '
         print *,' nstf_name(1)=',Model%nstf_name(1)
@@ -4701,6 +4761,9 @@ module GFS_typedefs
 
       print *, ' use_ufo           : ', Model%use_ufo
       print *, ' '
+      print *, 'flake model parameters'
+      print *, 'lkm                : ', Model%lkm
+
       print *, 'tuning parameters for physical parameterizations'
       print *, ' ras               : ', Model%ras
       if (Model%ras) then
@@ -5866,6 +5929,7 @@ module GFS_typedefs
     call interstitial_setup_tracers(Interstitial, Model)
     ! Allocate arrays
     allocate (Interstitial%adjsfculw_land  (IM))
+    allocate (Interstitial%adjsfculw_lake  (IM))
     allocate (Interstitial%adjsfculw_ice   (IM))
     allocate (Interstitial%adjsfculw_ocean (IM))
     allocate (Interstitial%adjnirbmd       (IM))
@@ -5882,13 +5946,16 @@ module GFS_typedefs
     allocate (Interstitial%cd              (IM))
     allocate (Interstitial%cd_ice          (IM))
     allocate (Interstitial%cd_land         (IM))
+    allocate (Interstitial%cd_lake         (IM))
     allocate (Interstitial%cd_ocean        (IM))
     allocate (Interstitial%cdq             (IM))
     allocate (Interstitial%cdq_ice         (IM))
     allocate (Interstitial%cdq_land        (IM))
+    allocate (Interstitial%cdq_lake        (IM))
     allocate (Interstitial%cdq_ocean       (IM))
     allocate (Interstitial%chh_ice         (IM))
     allocate (Interstitial%chh_land        (IM))
+    allocate (Interstitial%chh_lake        (IM))
     allocate (Interstitial%chh_ocean       (IM))
     allocate (Interstitial%cldf            (IM))
     allocate (Interstitial%cldsa           (IM,5))
@@ -5900,6 +5967,7 @@ module GFS_typedefs
     allocate (Interstitial%clx             (IM,4))
     allocate (Interstitial%cmm_ice         (IM))
     allocate (Interstitial%cmm_land        (IM))
+    allocate (Interstitial%cmm_lake        (IM))
     allocate (Interstitial%cmm_ocean       (IM))
     allocate (Interstitial%cnvc            (IM,Model%levs))
     allocate (Interstitial%cnvw            (IM,Model%levs))
@@ -5933,10 +6001,12 @@ module GFS_typedefs
     allocate (Interstitial%ep1d            (IM))
     allocate (Interstitial%ep1d_ice        (IM))
     allocate (Interstitial%ep1d_land       (IM))
+    allocate (Interstitial%ep1d_lake       (IM))
     allocate (Interstitial%ep1d_ocean      (IM))
     allocate (Interstitial%evap            (IM))
     allocate (Interstitial%evap_ice        (IM))
     allocate (Interstitial%evap_land       (IM))
+    allocate (Interstitial%evap_lake       (IM))
     allocate (Interstitial%evap_ocean      (IM))
     allocate (Interstitial%evbs            (IM))
     allocate (Interstitial%evcw            (IM))
@@ -5944,27 +6014,33 @@ module GFS_typedefs
     allocate (Interstitial%faersw          (IM,Model%levr+LTP,NBDSW,NF_AESW))
     allocate (Interstitial%ffhh_ice        (IM))
     allocate (Interstitial%ffhh_land       (IM))
+    allocate (Interstitial%ffhh_lake       (IM))
     allocate (Interstitial%ffhh_ocean      (IM))
     allocate (Interstitial%fh2             (IM))
     allocate (Interstitial%fh2_ice         (IM))
     allocate (Interstitial%fh2_land        (IM))
+    allocate (Interstitial%fh2_lake        (IM))
     allocate (Interstitial%fh2_ocean       (IM))
     allocate (Interstitial%flag_cice       (IM))
     allocate (Interstitial%flag_guess      (IM))
     allocate (Interstitial%flag_iter       (IM))
     allocate (Interstitial%ffmm_ice        (IM))
     allocate (Interstitial%ffmm_land       (IM))
+    allocate (Interstitial%ffmm_lake       (IM))
     allocate (Interstitial%ffmm_ocean      (IM))
     allocate (Interstitial%fm10            (IM))
     allocate (Interstitial%fm10_ice        (IM))
     allocate (Interstitial%fm10_land       (IM))
+    allocate (Interstitial%fm10_lake       (IM))
     allocate (Interstitial%fm10_ocean      (IM))
     allocate (Interstitial%frland          (IM))
+    allocate (Interstitial%frlake          (IM))
     allocate (Interstitial%fscav           (Interstitial%nscav))
     allocate (Interstitial%fswtr           (Interstitial%nscav))
     allocate (Interstitial%gabsbdlw        (IM))
     allocate (Interstitial%gabsbdlw_ice    (IM))
     allocate (Interstitial%gabsbdlw_land   (IM))
+    allocate (Interstitial%gabsbdlw_lake   (IM))
     allocate (Interstitial%gabsbdlw_ocean  (IM))
     allocate (Interstitial%gamma           (IM))
     allocate (Interstitial%gamq            (IM))
@@ -5973,6 +6049,7 @@ module GFS_typedefs
     allocate (Interstitial%gflx            (IM))
     allocate (Interstitial%gflx_ice        (IM))
     allocate (Interstitial%gflx_land       (IM))
+    allocate (Interstitial%gflx_lake       (IM))
     allocate (Interstitial%gflx_ocean      (IM))
     allocate (Interstitial%gwdcu           (IM,Model%levs))
     allocate (Interstitial%gwdcv           (IM,Model%levs))
@@ -5980,6 +6057,7 @@ module GFS_typedefs
     allocate (Interstitial%hflx            (IM))
     allocate (Interstitial%hflx_ice        (IM))
     allocate (Interstitial%hflx_land       (IM))
+    allocate (Interstitial%hflx_lake       (IM))
     allocate (Interstitial%hflx_ocean      (IM))
     allocate (Interstitial%htlwc           (IM,Model%levr+LTP))
     allocate (Interstitial%htlw0           (IM,Model%levr+LTP))
@@ -5991,7 +6069,7 @@ module GFS_typedefs
     allocate (Interstitial%lake            (IM))
     allocate (Interstitial%ocean           (IM))
     allocate (Interstitial%islmsk          (IM))
-    allocate (Interstitial%islmsk_cice     (IM))
+    allocate (Interstitial%islmsk_cice      (IM))
     allocate (Interstitial%wet             (IM))
     allocate (Interstitial%kbot            (IM))
     allocate (Interstitial%kcnv            (IM))
@@ -6012,6 +6090,7 @@ module GFS_typedefs
     allocate (Interstitial%qss             (IM))
     allocate (Interstitial%qss_ice         (IM))
     allocate (Interstitial%qss_land        (IM))
+    allocate (Interstitial%qss_lake        (IM))
     allocate (Interstitial%qss_ocean       (IM))
     allocate (Interstitial%raincd          (IM))
     allocate (Interstitial%raincs          (IM))
@@ -6020,6 +6099,7 @@ module GFS_typedefs
     allocate (Interstitial%rb              (IM))
     allocate (Interstitial%rb_ice          (IM))
     allocate (Interstitial%rb_land         (IM))
+    allocate (Interstitial%rb_lake         (IM))
     allocate (Interstitial%rb_ocean        (IM))
     allocate (Interstitial%rhc             (IM,Model%levs))
     allocate (Interstitial%runoff          (IM))
@@ -6031,6 +6111,7 @@ module GFS_typedefs
     allocate (Interstitial%scmpsw          (IM))
     allocate (Interstitial%semis_ice       (IM))
     allocate (Interstitial%semis_land      (IM))
+    allocate (Interstitial%semis_lake      (IM))
     allocate (Interstitial%semis_ocean     (IM))
     allocate (Interstitial%sfcalb          (IM,NF_ALBD))
     allocate (Interstitial%sigma           (IM))
@@ -6041,6 +6122,7 @@ module GFS_typedefs
     allocate (Interstitial%snowc           (IM))
     allocate (Interstitial%snowd_ice       (IM))
     allocate (Interstitial%snowd_land      (IM))
+    allocate (Interstitial%snowd_lake      (IM))
     allocate (Interstitial%snowd_ocean     (IM))
     allocate (Interstitial%snohf           (IM))
     allocate (Interstitial%snowmt          (IM))
@@ -6048,6 +6130,7 @@ module GFS_typedefs
     allocate (Interstitial%stress          (IM))
     allocate (Interstitial%stress_ice      (IM))
     allocate (Interstitial%stress_land     (IM))
+    allocate (Interstitial%stress_lake     (IM))
     allocate (Interstitial%stress_ocean    (IM))
     allocate (Interstitial%theta           (IM))
     allocate (Interstitial%tice            (IM))
@@ -6055,21 +6138,30 @@ module GFS_typedefs
     allocate (Interstitial%tlyr            (IM,Model%levr+LTP))
     allocate (Interstitial%tprcp_ice       (IM))
     allocate (Interstitial%tprcp_land      (IM))
+    allocate (Interstitial%tprcp_lake      (IM))
     allocate (Interstitial%tprcp_ocean     (IM))
     allocate (Interstitial%trans           (IM))
     allocate (Interstitial%tseal           (IM))
     allocate (Interstitial%tsfa            (IM))
     allocate (Interstitial%tsfc_ice        (IM))
     allocate (Interstitial%tsfc_land       (IM))
+    allocate (Interstitial%tsfc_lake       (IM))
     allocate (Interstitial%tsfc_ocean      (IM))
     allocate (Interstitial%tsfg            (IM))
     allocate (Interstitial%tsurf           (IM))
     allocate (Interstitial%tsurf_ice       (IM))
     allocate (Interstitial%tsurf_land      (IM))
+    allocate (Interstitial%tsurf_lake      (IM))
     allocate (Interstitial%tsurf_ocean     (IM))
     allocate (Interstitial%ud_mf           (IM,Model%levs))
+    allocate (Interstitial%ulwsfc_cice     (IM))
+    allocate (Interstitial%dusfc_cice      (IM))
+    allocate (Interstitial%dvsfc_cice      (IM))
+    allocate (Interstitial%dtsfc_cice      (IM))
+    allocate (Interstitial%dqsfc_cice      (IM))
     allocate (Interstitial%uustar_ice      (IM))
     allocate (Interstitial%uustar_land     (IM))
+    allocate (Interstitial%uustar_lake     (IM))
     allocate (Interstitial%uustar_ocean    (IM))
     allocate (Interstitial%vdftra          (IM,Model%levs,Interstitial%nvdiff))  !GJF first dimension was set as 'IX' in GFS_physics_driver
     allocate (Interstitial%vegf1d          (IM))
@@ -6077,6 +6169,7 @@ module GFS_typedefs
     allocate (Interstitial%wcbmax          (IM))
     allocate (Interstitial%weasd_ice       (IM))
     allocate (Interstitial%weasd_land      (IM))
+    allocate (Interstitial%weasd_lake      (IM))
     allocate (Interstitial%weasd_ocean     (IM))
     allocate (Interstitial%wind            (IM))
     allocate (Interstitial%work1           (IM))
@@ -6088,6 +6181,7 @@ module GFS_typedefs
     allocate (Interstitial%z01d            (IM))
     allocate (Interstitial%zorl_ice        (IM))
     allocate (Interstitial%zorl_land       (IM))
+    allocate (Interstitial%zorl_lake       (IM))
     allocate (Interstitial%zorl_ocean      (IM))
     allocate (Interstitial%zt1d            (IM))
    ! RRTMGP
@@ -6514,6 +6608,7 @@ module GFS_typedefs
     type(GFS_control_type), intent(in) :: Model
     !
     Interstitial%adjsfculw_land  = clear_val
+    Interstitial%adjsfculw_lake  = clear_val
     Interstitial%adjsfculw_ice   = clear_val
     Interstitial%adjsfculw_ocean = clear_val
     Interstitial%adjnirbmd       = clear_val
@@ -6528,13 +6623,16 @@ module GFS_typedefs
     Interstitial%cd              = clear_val
     Interstitial%cd_ice          = huge
     Interstitial%cd_land         = huge
+    Interstitial%cd_lake         = huge
     Interstitial%cd_ocean        = huge
     Interstitial%cdq             = clear_val
     Interstitial%cdq_ice         = huge
     Interstitial%cdq_land        = huge
+    Interstitial%cdq_lake        = huge
     Interstitial%cdq_ocean       = huge
     Interstitial%chh_ice         = huge
     Interstitial%chh_land        = huge
+    Interstitial%chh_lake        = huge
     Interstitial%chh_ocean       = huge
     Interstitial%cld1d           = clear_val
     Interstitial%cldf            = clear_val
@@ -6543,6 +6641,7 @@ module GFS_typedefs
     Interstitial%clx             = clear_val
     Interstitial%cmm_ice         = huge
     Interstitial%cmm_land        = huge
+    Interstitial%cmm_lake        = huge
     Interstitial%cmm_ocean       = huge
     Interstitial%cnvc            = clear_val
     Interstitial%cnvw            = clear_val
@@ -6573,36 +6672,44 @@ module GFS_typedefs
     Interstitial%ep1d            = clear_val
     Interstitial%ep1d_ice        = huge
     Interstitial%ep1d_land       = huge
+    Interstitial%ep1d_lake       = huge
     Interstitial%ep1d_ocean      = huge
     Interstitial%evap            = clear_val
     Interstitial%evap_ice        = huge
     Interstitial%evap_land       = huge
+    Interstitial%evap_lake       = huge
     Interstitial%evap_ocean      = huge
     Interstitial%evbs            = clear_val
     Interstitial%evcw            = clear_val
     Interstitial%ffhh_ice        = huge
     Interstitial%ffhh_land       = huge
+    Interstitial%ffhh_lake       = huge
     Interstitial%ffhh_ocean      = huge
     Interstitial%fh2             = clear_val
     Interstitial%fh2_ice         = huge
     Interstitial%fh2_land        = huge
+    Interstitial%fh2_lake        = huge
     Interstitial%fh2_ocean       = huge
     Interstitial%flag_cice       = .false.
     Interstitial%flag_guess      = .false.
     Interstitial%flag_iter       = .true.
     Interstitial%ffmm_ice        = huge
     Interstitial%ffmm_land       = huge
+    Interstitial%ffmm_lake       = huge
     Interstitial%ffmm_ocean      = huge
     Interstitial%fm10            = clear_val
     Interstitial%fm10_ice        = huge
     Interstitial%fm10_land       = huge
+    Interstitial%fm10_lake       = huge
     Interstitial%fm10_ocean      = huge
     Interstitial%frland          = clear_val
+    Interstitial%frlake          = clear_val
     Interstitial%fscav           = clear_val
     Interstitial%fswtr           = clear_val
     Interstitial%gabsbdlw        = clear_val
     Interstitial%gabsbdlw_ice    = clear_val
     Interstitial%gabsbdlw_land   = clear_val
+    Interstitial%gabsbdlw_lake   = clear_val
     Interstitial%gabsbdlw_ocean  = clear_val
     Interstitial%gamma           = clear_val
     Interstitial%gamq            = clear_val
@@ -6610,12 +6717,14 @@ module GFS_typedefs
     Interstitial%gflx            = clear_val
     Interstitial%gflx_ice        = clear_val
     Interstitial%gflx_land       = clear_val
+    Interstitial%gflx_lake       = zero
     Interstitial%gflx_ocean      = clear_val
     Interstitial%gwdcu           = clear_val
     Interstitial%gwdcv           = clear_val
     Interstitial%hflx            = clear_val
     Interstitial%hflx_ice        = huge
     Interstitial%hflx_land       = huge
+    Interstitial%hflx_lake       = huge
     Interstitial%hflx_ocean      = huge
     Interstitial%dry             = .false.
     Interstitial%icy             = .false.
@@ -6636,6 +6745,7 @@ module GFS_typedefs
     Interstitial%qss             = clear_val
     Interstitial%qss_ice         = huge
     Interstitial%qss_land        = huge
+    Interstitial%qss_lake        = huge
     Interstitial%qss_ocean       = huge
     Interstitial%raincd          = clear_val
     Interstitial%raincs          = clear_val
@@ -6644,6 +6754,7 @@ module GFS_typedefs
     Interstitial%rb              = clear_val
     Interstitial%rb_ice          = huge
     Interstitial%rb_land         = huge
+    Interstitial%rb_lake         = huge
     Interstitial%rb_ocean        = huge
     Interstitial%rhc             = clear_val
     Interstitial%runoff          = clear_val
@@ -6654,6 +6765,7 @@ module GFS_typedefs
     Interstitial%sbsno           = clear_val
     Interstitial%semis_ice       = clear_val
     Interstitial%semis_land      = clear_val
+    Interstitial%semis_lake      = clear_val
     Interstitial%semis_ocean     = clear_val
     Interstitial%sigma           = clear_val
     Interstitial%sigmaf          = clear_val
@@ -6663,6 +6775,7 @@ module GFS_typedefs
     Interstitial%snowc           = clear_val
     Interstitial%snowd_ice       = huge
     Interstitial%snowd_land      = huge
+    Interstitial%snowd_lake      = huge
     Interstitial%snowd_ocean     = huge
     Interstitial%snohf           = clear_val
     Interstitial%snowmt          = clear_val
@@ -6670,24 +6783,34 @@ module GFS_typedefs
     Interstitial%stress          = clear_val
     Interstitial%stress_ice      = huge
     Interstitial%stress_land     = huge
+    Interstitial%stress_lake     = huge
     Interstitial%stress_ocean    = huge
     Interstitial%theta           = clear_val
     Interstitial%tice            = clear_val
     Interstitial%tprcp_ice       = huge
     Interstitial%tprcp_land      = huge
+    Interstitial%tprcp_lake      = huge
     Interstitial%tprcp_ocean     = huge
     Interstitial%trans           = clear_val
     Interstitial%tseal           = clear_val
     Interstitial%tsfc_ice        = huge
     Interstitial%tsfc_land       = huge
+    Interstitial%tsfc_lake       = huge
     Interstitial%tsfc_ocean      = huge
     Interstitial%tsurf           = clear_val
     Interstitial%tsurf_ice       = huge
     Interstitial%tsurf_land      = huge
+    Interstitial%tsurf_lake      = huge
     Interstitial%tsurf_ocean     = huge
     Interstitial%ud_mf           = clear_val
+    Interstitial%ulwsfc_cice     = clear_val
+    Interstitial%dusfc_cice      = clear_val
+    Interstitial%dvsfc_cice      = clear_val
+    Interstitial%dtsfc_cice      = clear_val
+    Interstitial%dqsfc_cice      = clear_val
     Interstitial%uustar_ice      = huge
     Interstitial%uustar_land     = huge
+    Interstitial%uustar_lake     = huge
     Interstitial%uustar_ocean    = huge
     Interstitial%vdftra          = clear_val
     Interstitial%vegf1d          = clear_val
@@ -6695,6 +6818,7 @@ module GFS_typedefs
     Interstitial%wcbmax          = clear_val
     Interstitial%weasd_ice       = huge
     Interstitial%weasd_land      = huge
+    Interstitial%weasd_lake      = huge
     Interstitial%weasd_ocean     = huge
     Interstitial%wind            = huge
     Interstitial%work1           = clear_val
@@ -6706,6 +6830,7 @@ module GFS_typedefs
     Interstitial%z01d            = clear_val
     Interstitial%zorl_ice        = huge
     Interstitial%zorl_land       = huge
+    Interstitial%zorl_lake       = huge
     Interstitial%zorl_ocean      = huge
     Interstitial%zt1d            = clear_val
 ! CIRES UGWP v0
@@ -6817,6 +6942,7 @@ module GFS_typedefs
     ! Print all other variables
     write (0,*) 'Interstitial_print: values that change'
     write (0,*) 'sum(Interstitial%adjsfculw_land  ) = ', sum(Interstitial%adjsfculw_land  )
+    write (0,*) 'sum(Interstitial%adjsfculw_lake  ) = ', sum(Interstitial%adjsfculw_lake  )
     write (0,*) 'sum(Interstitial%adjsfculw_ice   ) = ', sum(Interstitial%adjsfculw_ice   )
     write (0,*) 'sum(Interstitial%adjsfculw_ocean ) = ', sum(Interstitial%adjsfculw_ocean )
     write (0,*) 'sum(Interstitial%adjnirbmd       ) = ', sum(Interstitial%adjnirbmd       )
@@ -6833,13 +6959,16 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%cd              ) = ', sum(Interstitial%cd              )
     write (0,*) 'sum(Interstitial%cd_ice          ) = ', sum(Interstitial%cd_ice          )
     write (0,*) 'sum(Interstitial%cd_land         ) = ', sum(Interstitial%cd_land         )
+    write (0,*) 'sum(Interstitial%cd_lake         ) = ', sum(Interstitial%cd_lake         )
     write (0,*) 'sum(Interstitial%cd_ocean        ) = ', sum(Interstitial%cd_ocean        )
     write (0,*) 'sum(Interstitial%cdq             ) = ', sum(Interstitial%cdq             )
     write (0,*) 'sum(Interstitial%cdq_ice         ) = ', sum(Interstitial%cdq_ice         )
     write (0,*) 'sum(Interstitial%cdq_land        ) = ', sum(Interstitial%cdq_land        )
+    write (0,*) 'sum(Interstitial%cdq_lake        ) = ', sum(Interstitial%cdq_lake        )
     write (0,*) 'sum(Interstitial%cdq_ocean       ) = ', sum(Interstitial%cdq_ocean       )
     write (0,*) 'sum(Interstitial%chh_ice         ) = ', sum(Interstitial%chh_ice         )
     write (0,*) 'sum(Interstitial%chh_land        ) = ', sum(Interstitial%chh_land        )
+    write (0,*) 'sum(Interstitial%chh_lake        ) = ', sum(Interstitial%chh_lake        )
     write (0,*) 'sum(Interstitial%chh_ocean       ) = ', sum(Interstitial%chh_ocean       )
     write (0,*) 'sum(Interstitial%cldf            ) = ', sum(Interstitial%cldf            )
     write (0,*) 'sum(Interstitial%cldsa           ) = ', sum(Interstitial%cldsa           )
@@ -6851,6 +6980,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%clouds          ) = ', sum(Interstitial%clouds          )
     write (0,*) 'sum(Interstitial%cmm_ice         ) = ', sum(Interstitial%cmm_ice         )
     write (0,*) 'sum(Interstitial%cmm_land        ) = ', sum(Interstitial%cmm_land        )
+    write (0,*) 'sum(Interstitial%cmm_lake        ) = ', sum(Interstitial%cmm_lake        )
     write (0,*) 'sum(Interstitial%cmm_ocean       ) = ', sum(Interstitial%cmm_ocean       )
     write (0,*) 'sum(Interstitial%cnvc            ) = ', sum(Interstitial%cnvc            )
     write (0,*) 'sum(Interstitial%cnvw            ) = ', sum(Interstitial%cnvw            )
@@ -6884,10 +7014,12 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%ep1d            ) = ', sum(Interstitial%ep1d            )
     write (0,*) 'sum(Interstitial%ep1d_ice        ) = ', sum(Interstitial%ep1d_ice        )
     write (0,*) 'sum(Interstitial%ep1d_land       ) = ', sum(Interstitial%ep1d_land       )
+    write (0,*) 'sum(Interstitial%ep1d_lake       ) = ', sum(Interstitial%ep1d_lake       )
     write (0,*) 'sum(Interstitial%ep1d_ocean      ) = ', sum(Interstitial%ep1d_ocean      )
     write (0,*) 'sum(Interstitial%evap            ) = ', sum(Interstitial%evap            )
     write (0,*) 'sum(Interstitial%evap_ice        ) = ', sum(Interstitial%evap_ice        )
     write (0,*) 'sum(Interstitial%evap_land       ) = ', sum(Interstitial%evap_land       )
+    write (0,*) 'sum(Interstitial%evap_lake_      ) = ', sum(Interstitial%evap_lake       )
     write (0,*) 'sum(Interstitial%evap_ocean      ) = ', sum(Interstitial%evap_ocean      )
     write (0,*) 'sum(Interstitial%evbs            ) = ', sum(Interstitial%evbs            )
     write (0,*) 'sum(Interstitial%evcw            ) = ', sum(Interstitial%evcw            )
@@ -6895,28 +7027,34 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%faersw          ) = ', sum(Interstitial%faersw          )
     write (0,*) 'sum(Interstitial%ffhh_ice        ) = ', sum(Interstitial%ffhh_ice        )
     write (0,*) 'sum(Interstitial%ffhh_land       ) = ', sum(Interstitial%ffhh_land       )
+    write (0,*) 'sum(Interstitial%ffhh_lake       ) = ', sum(Interstitial%ffhh_lake       )
     write (0,*) 'sum(Interstitial%ffhh_ocean      ) = ', sum(Interstitial%ffhh_ocean      )
     write (0,*) 'sum(Interstitial%fh2             ) = ', sum(Interstitial%fh2             )
     write (0,*) 'sum(Interstitial%fh2_ice         ) = ', sum(Interstitial%fh2_ice         )
     write (0,*) 'sum(Interstitial%fh2_land        ) = ', sum(Interstitial%fh2_land        )
+    write (0,*) 'sum(Interstitial%fh2_lake        ) = ', sum(Interstitial%fh2_lake        )
     write (0,*) 'sum(Interstitial%fh2_ocean       ) = ', sum(Interstitial%fh2_ocean       )
     write (0,*) 'Interstitial%flag_cice(1)          = ', Interstitial%flag_cice(1)
     write (0,*) 'Interstitial%flag_guess(1)         = ', Interstitial%flag_guess(1)
     write (0,*) 'Interstitial%flag_iter(1)          = ', Interstitial%flag_iter(1)
     write (0,*) 'sum(Interstitial%ffmm_ice        ) = ', sum(Interstitial%ffmm_ice        )
     write (0,*) 'sum(Interstitial%ffmm_land       ) = ', sum(Interstitial%ffmm_land       )
+    write (0,*) 'sum(Interstitial%ffmm_lake       ) = ', sum(Interstitial%ffmm_lake       )
     write (0,*) 'sum(Interstitial%ffmm_ocean      ) = ', sum(Interstitial%ffmm_ocean      )
     write (0,*) 'sum(Interstitial%fm10            ) = ', sum(Interstitial%fm10            )
     write (0,*) 'sum(Interstitial%fm10_ice        ) = ', sum(Interstitial%fm10_ice        )
     write (0,*) 'sum(Interstitial%fm10_land       ) = ', sum(Interstitial%fm10_land       )
+    write (0,*) 'sum(Interstitial%fm10_lake       ) = ', sum(Interstitial%fm10_lake       )
     write (0,*) 'sum(Interstitial%fm10_ocean      ) = ', sum(Interstitial%fm10_ocean      )
     write (0,*) 'Interstitial%frain                 = ', Interstitial%frain
     write (0,*) 'sum(Interstitial%frland          ) = ', sum(Interstitial%frland          )
+    write (0,*) 'sum(Interstitial%frlake          ) = ', sum(Interstitial%frlake          )
     write (0,*) 'sum(Interstitial%fscav           ) = ', sum(Interstitial%fscav           )
     write (0,*) 'sum(Interstitial%fswtr           ) = ', sum(Interstitial%fswtr           )
     write (0,*) 'sum(Interstitial%gabsbdlw        ) = ', sum(Interstitial%gabsbdlw        )
     write (0,*) 'sum(Interstitial%gabsbdlw_ice    ) = ', sum(Interstitial%gabsbdlw_ice    )
     write (0,*) 'sum(Interstitial%gabsbdlw_land   ) = ', sum(Interstitial%gabsbdlw_land   )
+    write (0,*) 'sum(Interstitial%gabsbdlw_lake   ) = ', sum(Interstitial%gabsbdlw_lake   )
     write (0,*) 'sum(Interstitial%gabsbdlw_ocean  ) = ', sum(Interstitial%gabsbdlw_ocean  )
     write (0,*) 'sum(Interstitial%gamma           ) = ', sum(Interstitial%gamma           )
     write (0,*) 'sum(Interstitial%gamq            ) = ', sum(Interstitial%gamq            )
@@ -6925,12 +7063,14 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%gflx            ) = ', sum(Interstitial%gflx            )
     write (0,*) 'sum(Interstitial%gflx_ice        ) = ', sum(Interstitial%gflx_ice        )
     write (0,*) 'sum(Interstitial%gflx_land       ) = ', sum(Interstitial%gflx_land       )
+    write (0,*) 'sum(Interstitial%gflx_lake       ) = ', sum(Interstitial%gflx_lake       )
     write (0,*) 'sum(Interstitial%gflx_ocean      ) = ', sum(Interstitial%gflx_ocean      )
     write (0,*) 'sum(Interstitial%gwdcu           ) = ', sum(Interstitial%gwdcu           )
     write (0,*) 'sum(Interstitial%gwdcv           ) = ', sum(Interstitial%gwdcv           )
     write (0,*) 'sum(Interstitial%hflx            ) = ', sum(Interstitial%hflx            )
     write (0,*) 'sum(Interstitial%hflx_ice        ) = ', sum(Interstitial%hflx_ice        )
     write (0,*) 'sum(Interstitial%hflx_land       ) = ', sum(Interstitial%hflx_land       )
+    write (0,*) 'sum(Interstitial%hflx_lake       ) = ', sum(Interstitial%hflx_lake       )
     write (0,*) 'sum(Interstitial%hflx_ocean      ) = ', sum(Interstitial%hflx_ocean      )
     write (0,*) 'sum(Interstitial%htlwc           ) = ', sum(Interstitial%htlwc           )
     write (0,*) 'sum(Interstitial%htlw0           ) = ', sum(Interstitial%htlw0           )
@@ -6966,6 +7106,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%qss             ) = ', sum(Interstitial%qss             )
     write (0,*) 'sum(Interstitial%qss_ice         ) = ', sum(Interstitial%qss_ice         )
     write (0,*) 'sum(Interstitial%qss_land        ) = ', sum(Interstitial%qss_land        )
+    write (0,*) 'sum(Interstitial%qss_lake        ) = ', sum(Interstitial%qss_lake        )
     write (0,*) 'sum(Interstitial%qss_ocean       ) = ', sum(Interstitial%qss_ocean       )
     write (0,*) 'Interstitial%radar_reset           = ', Interstitial%radar_reset
     write (0,*) 'Interstitial%raddt                 = ', Interstitial%raddt
@@ -6976,6 +7117,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%rb              ) = ', sum(Interstitial%rb              )
     write (0,*) 'sum(Interstitial%rb_ice          ) = ', sum(Interstitial%rb_ice          )
     write (0,*) 'sum(Interstitial%rb_land         ) = ', sum(Interstitial%rb_land         )
+    write (0,*) 'sum(Interstitial%rb_lake         ) = ', sum(Interstitial%rb_lake         )
     write (0,*) 'sum(Interstitial%rb_ocean        ) = ', sum(Interstitial%rb_ocean        )
     write (0,*) 'Interstitial%reset                 = ', Interstitial%reset
     write (0,*) 'sum(Interstitial%rhc             ) = ', sum(Interstitial%rhc             )
@@ -6993,6 +7135,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%scmpsw%visdf    ) = ', sum(Interstitial%scmpsw%visdf    )
     write (0,*) 'sum(Interstitial%semis_ice       ) = ', sum(Interstitial%semis_ice       )
     write (0,*) 'sum(Interstitial%semis_land      ) = ', sum(Interstitial%semis_land      )
+    write (0,*) 'sum(Interstitial%semis_lake      ) = ', sum(Interstitial%semis_lake      )
     write (0,*) 'sum(Interstitial%semis_ocean     ) = ', sum(Interstitial%semis_ocean     )
     write (0,*) 'sum(Interstitial%sfcalb          ) = ', sum(Interstitial%sfcalb          )
     write (0,*) 'sum(Interstitial%sigma           ) = ', sum(Interstitial%sigma           )
@@ -7003,6 +7146,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%snowc           ) = ', sum(Interstitial%snowc           )
     write (0,*) 'sum(Interstitial%snowd_ice       ) = ', sum(Interstitial%snowd_ice       )
     write (0,*) 'sum(Interstitial%snowd_land      ) = ', sum(Interstitial%snowd_land      )
+    write (0,*) 'sum(Interstitial%snowd_lake      ) = ', sum(Interstitial%snowd_lake      )
     write (0,*) 'sum(Interstitial%snowd_ocean     ) = ', sum(Interstitial%snowd_ocean     )
     write (0,*) 'sum(Interstitial%snohf           ) = ', sum(Interstitial%snohf           )
     write (0,*) 'sum(Interstitial%snowmt          ) = ', sum(Interstitial%snowmt          )
@@ -7010,6 +7154,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%stress          ) = ', sum(Interstitial%stress          )
     write (0,*) 'sum(Interstitial%stress_ice      ) = ', sum(Interstitial%stress_ice      )
     write (0,*) 'sum(Interstitial%stress_land     ) = ', sum(Interstitial%stress_land     )
+    write (0,*) 'sum(Interstitial%stress_lake     ) = ', sum(Interstitial%stress_lake     )
     write (0,*) 'sum(Interstitial%stress_ocean    ) = ', sum(Interstitial%stress_ocean    )
     write (0,*) 'sum(Interstitial%theta           ) = ', sum(Interstitial%theta           )
     write (0,*) 'sum(Interstitial%tice            ) = ', sum(Interstitial%tice            )
@@ -7017,21 +7162,30 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%tlyr            ) = ', sum(Interstitial%tlyr            )
     write (0,*) 'sum(Interstitial%tprcp_ice       ) = ', sum(Interstitial%tprcp_ice       )
     write (0,*) 'sum(Interstitial%tprcp_land      ) = ', sum(Interstitial%tprcp_land      )
+    write (0,*) 'sum(Interstitial%tprcp_lake      ) = ', sum(Interstitial%tprcp_lake      )
     write (0,*) 'sum(Interstitial%tprcp_ocean     ) = ', sum(Interstitial%tprcp_ocean     )
     write (0,*) 'sum(Interstitial%trans           ) = ', sum(Interstitial%trans           )
     write (0,*) 'sum(Interstitial%tseal           ) = ', sum(Interstitial%tseal           )
     write (0,*) 'sum(Interstitial%tsfa            ) = ', sum(Interstitial%tsfa            )
     write (0,*) 'sum(Interstitial%tsfc_ice        ) = ', sum(Interstitial%tsfc_ice        )
     write (0,*) 'sum(Interstitial%tsfc_land       ) = ', sum(Interstitial%tsfc_land       )
+    write (0,*) 'sum(Interstitial%tsfc_lake       ) = ', sum(Interstitial%tsfc_lake       )
     write (0,*) 'sum(Interstitial%tsfc_ocean      ) = ', sum(Interstitial%tsfc_ocean      )
     write (0,*) 'sum(Interstitial%tsfg            ) = ', sum(Interstitial%tsfg            )
     write (0,*) 'sum(Interstitial%tsurf           ) = ', sum(Interstitial%tsurf           )
     write (0,*) 'sum(Interstitial%tsurf_ice       ) = ', sum(Interstitial%tsurf_ice       )
     write (0,*) 'sum(Interstitial%tsurf_land      ) = ', sum(Interstitial%tsurf_land      )
+    write (0,*) 'sum(Interstitial%tsurf_lake      ) = ', sum(Interstitial%tsurf_lake      )
     write (0,*) 'sum(Interstitial%tsurf_ocean     ) = ', sum(Interstitial%tsurf_ocean     )
     write (0,*) 'sum(Interstitial%ud_mf           ) = ', sum(Interstitial%ud_mf           )
+    write (0,*) 'sum(Interstitial%ulwsfc_cice     ) = ', sum(Interstitial%ulwsfc_cice     )
+    write (0,*) 'sum(Interstitial%dusfc_cice      ) = ', sum(Interstitial%dusfc_cice      )
+    write (0,*) 'sum(Interstitial%dvsfc_cice      ) = ', sum(Interstitial%dvsfc_cice      )
+    write (0,*) 'sum(Interstitial%dtsfc_cice      ) = ', sum(Interstitial%dtsfc_cice      )
+    write (0,*) 'sum(Interstitial%dqsfc_cice      ) = ', sum(Interstitial%dqsfc_cice      )
     write (0,*) 'sum(Interstitial%uustar_ice      ) = ', sum(Interstitial%uustar_ice      )
     write (0,*) 'sum(Interstitial%uustar_land     ) = ', sum(Interstitial%uustar_land     )
+    write (0,*) 'sum(Interstitial%uustar_lake     ) = ', sum(Interstitial%uustar_lake     )
     write (0,*) 'sum(Interstitial%uustar_ocean    ) = ', sum(Interstitial%uustar_ocean    )
     write (0,*) 'sum(Interstitial%vdftra          ) = ', sum(Interstitial%vdftra          )
     write (0,*) 'sum(Interstitial%vegf1d          ) = ', sum(Interstitial%vegf1d          )
@@ -7039,6 +7193,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%wcbmax          ) = ', sum(Interstitial%wcbmax          )
     write (0,*) 'sum(Interstitial%weasd_ice       ) = ', sum(Interstitial%weasd_ice       )
     write (0,*) 'sum(Interstitial%weasd_land      ) = ', sum(Interstitial%weasd_land      )
+    write (0,*) 'sum(Interstitial%weasd_lake      ) = ', sum(Interstitial%weasd_lake      )
     write (0,*) 'sum(Interstitial%weasd_ocean     ) = ', sum(Interstitial%weasd_ocean     )
     write (0,*) 'sum(Interstitial%wind            ) = ', sum(Interstitial%wind            )
     write (0,*) 'sum(Interstitial%work1           ) = ', sum(Interstitial%work1           )
@@ -7050,6 +7205,7 @@ module GFS_typedefs
     write (0,*) 'sum(Interstitial%z01d            ) = ', sum(Interstitial%z01d            )
     write (0,*) 'sum(Interstitial%zorl_ice        ) = ', sum(Interstitial%zorl_ice        )
     write (0,*) 'sum(Interstitial%zorl_land       ) = ', sum(Interstitial%zorl_land       )
+    write (0,*) 'sum(Interstitial%zorl_lake       ) = ', sum(Interstitial%zorl_lake       )
     write (0,*) 'sum(Interstitial%zorl_ocean      ) = ', sum(Interstitial%zorl_ocean      )
     write (0,*) 'sum(Interstitial%zt1d            ) = ', sum(Interstitial%zt1d            )
 ! CIRES UGWP v0
