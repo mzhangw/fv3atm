@@ -2202,14 +2202,14 @@
   dimensions = ()
   type = integer
 [iovr_sw]
-  standard_name = flag_for_max_random_overlap_clouds_for_shortwave_radiation
-  long_name = sw: max-random overlap clouds
+  standard_name = flag_for_cloud_overlapping_method_for_shortwave_radiation
+  long_name = control flag for cloud overlapping method for SW
   units = flag
   dimensions = ()
   type = integer
 [iovr_lw]
-  standard_name = flag_for_max_random_overlap_clouds_for_longwave_radiation
-  long_name = lw: max-random overlap clouds
+  standard_name = flag_for_cloud_overlapping_method_for_longwave_radiation
+  long_name = control flag for cloud overlapping method for LW
   units = flag
   dimensions = ()
   type = integer
@@ -2220,14 +2220,14 @@
   dimensions = ()
   type = integer
 [isubc_sw]
-  standard_name = flag_for_sw_clouds_without_sub_grid_approximation
-  long_name = flag for sw clouds without sub-grid approximation
+  standard_name = flag_for_sw_clouds_grid_approximation
+  long_name = flag for sw clouds sub-grid approximation
   units = flag
   dimensions = ()
   type = integer
 [isubc_lw]
-  standard_name = flag_for_lw_clouds_without_sub_grid_approximation
-  long_name = flag for lw clouds without sub-grid approximation
+  standard_name = flag_for_lw_clouds_sub_grid_approximation
+  long_name = flag for lw clouds sub-grid approximation
   units = flag
   dimensions = ()
   type = integer
@@ -3026,6 +3026,12 @@
   units = flag
   dimensions = ()
   type = logical
+[hurr_pbl]
+  standard_name = flag_hurricane_PBL
+  long_name = flag for hurricane-specific options in PBL scheme
+  units = flag
+  dimensions = ()
+  type = logical
 [lheatstrg]
   standard_name = flag_for_canopy_heat_storage
   long_name = flag for canopy heat storage parameterization
@@ -3098,6 +3104,18 @@
   units = flag
   dimensions = ()
   type = integer
+[hwrf_samfdeep]
+  standard_name = flag_for_hwrf_samfdeepcnv_scheme
+  long_name = flag for hwrf samfdeepcnv scheme
+  units = flag
+  dimensions = ()
+  type = logical
+[hwrf_samfshal]
+  standard_name = flag_for_hwrf_samfshalcnv_scheme
+  long_name = flag for hwrf samfshalcnv scheme
+  units = flag
+  dimensions = ()
+  type = logical
 [isatmedmf]
   standard_name = choice_of_scale_aware_TKE_moist_EDMF_PBL
   long_name = choice of scale-aware TKE moist EDMF PBL scheme
@@ -3412,7 +3430,7 @@
   kind = kind_phys
 [moninq_fac]
   standard_name = atmosphere_diffusivity_coefficient_factor
-  long_name = multiplicative constant for atmospheric diffusivities
+  long_name = multiplicative constant for atmospheric diffusivities (AKA alpha)
   units = none
   dimensions = ()
   type = real
@@ -4047,6 +4065,12 @@
   dimensions = ()
   type = real
   kind = kind_phys
+[icloud]
+  standard_name = cloud_effect_to_optical_depth_and_cloud_fraction
+  long_name = cloud effect to the optical depth and cloud fraction in radiation
+  units = flag
+  dimensions = ()
+  type = integer
 [gwd_opt]
   standard_name = gwd_opt
   long_name = flag to choose gwd scheme
@@ -4149,6 +4173,27 @@
   units = flag
   dimensions = ()
   type = integer
+[var_ric]
+  standard_name = flag_variable_bulk_richardson_number
+  long_name = flag for calculating variable bulk richardson number for hurricane PBL
+  units = flag
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[coef_ric_l]
+  standard_name = coefficient_for_variable_bulk_richardson_number_over_land
+  long_name = coefficient for calculating variable bulk richardson number for hurricane PBL over land
+  units = none
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[coef_ric_s]
+  standard_name = coefficient_for_variable_bulk_richardson_number_over_ocean
+  long_name = coefficient for calculating variable bulk richardson number for hurricane PBL over ocean
+  units = none
+  dimensions = ()
+  type = real
+  kind = kind_phys
 [do_ugwp]
   standard_name = do_ugwp
   long_name = flag to activate CIRES UGWP
@@ -6281,63 +6326,63 @@
   standard_name = total_cloud_fraction
   long_name = layer total cloud fraction
   units = frac
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,2)]
   standard_name = cloud_liquid_water_path
   long_name = layer cloud liquid water path
   units = g m-2
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,3)]
   standard_name = mean_effective_radius_for_liquid_cloud
   long_name = mean effective radius for liquid cloud
   units = micron
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,4)]
   standard_name = cloud_ice_water_path
   long_name = layer cloud ice water path
   units = g m-2
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,5)]
   standard_name = mean_effective_radius_for_ice_cloud
   long_name = mean effective radius for ice cloud
   units = micron
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,6)]
   standard_name = cloud_rain_water_path
   long_name = cloud rain water path
   units = g m-2
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,7)]
   standard_name = mean_effective_radius_for_rain_drop
   long_name = mean effective radius for rain drop
   units = micron
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,8)]
   standard_name = cloud_snow_water_path
   long_name = cloud snow water path
   units = g m-2
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clouds(:,:,9)]
   standard_name = mean_effective_radius_for_snow_flake
   long_name = mean effective radius for snow flake
   units = micron
-  dimensions = (horizontal_dimension,vertical_dimension)
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
 [clw]

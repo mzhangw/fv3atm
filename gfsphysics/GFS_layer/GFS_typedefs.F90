@@ -801,6 +801,8 @@ module GFS_typedefs
 #ifdef CCPP
     real(kind=kind_phys) :: rhgrd           !< fer_hires microphysics only
     logical              :: spec_adv        !< flag for individual cloud species advected
+    integer              :: icloud          !< cloud effect to the optical depth in radiation; this also controls the cloud fraction options
+                                            !<  3: with cloud effect, and use cloud fraction option 3, based on Sundqvist et al. (1989)
 #endif
     logical              :: do_aw           !< AW scale-aware option in cs convection
     logical              :: do_awdd         !< AW scale-aware option in cs convection
@@ -823,6 +825,9 @@ module GFS_typedefs
     logical              :: shinhong        !< flag for scale-aware Shinhong vertical turbulent mixing scheme
     logical              :: do_ysu          !< flag for YSU turbulent mixing scheme
     logical              :: dspheat         !< flag for tke dissipative heating
+#ifdef CCPP
+    logical              :: hurr_pbl        !< flag for hurricane-specific options in PBL scheme
+#endif
     logical              :: lheatstrg       !< flag for canopy heat storage parameterization
     logical              :: cnvcld        
     logical              :: random_clds     !< flag controls whether clouds are random
@@ -841,6 +846,7 @@ module GFS_typedefs
     integer              :: imfshalcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux shallow convection scheme
     integer              :: imfshalcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfshalcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
+    logical              :: hwrf_samfdeep           !< flag for HWRF SAMF deepcnv scheme (HWRF)
 #endif
     integer              :: imfdeepcnv      !< flag for mass-flux deep convection scheme
                                             !<     1: July 2010 version of SAS conv scheme
@@ -854,6 +860,7 @@ module GFS_typedefs
     integer              :: imfdeepcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux deep convection scheme
     integer              :: imfdeepcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfdeepcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
+    logical              :: hwrf_samfshal           !< flag for HWRF SAMF shalcnv scheme (HWRF)
 #endif
     integer              :: isatmedmf       !< flag for scale-aware TKE-based moist edmf scheme
                                             !<     0: initial version of satmedmf (Nov. 2018)
@@ -902,6 +909,9 @@ module GFS_typedefs
     integer              :: bl_mynn_cloudmix   !< flag to activate mixing of cloud species
     integer              :: bl_mynn_mixqt      !< flag to mix total water or individual species
     integer              :: icloud_bl          !< flag for coupling sgs clouds to radiation
+    real(kind=kind_phys) :: var_ric
+    real(kind=kind_phys) :: coef_ric_l
+    real(kind=kind_phys) :: coef_ric_s
     ! *DH
     ! MYJ switches
     logical              :: do_myjsfc          !< flag for MYJ surface layer scheme
@@ -2909,8 +2919,10 @@ module GFS_typedefs
     real(kind=kind_phys) :: avg_max_length = 3600.                 !< reset value in seconds for max hourly
 !--- Ferrier-Aligo microphysical parameters
 #ifdef CCPP
-    real(kind=kind_phys) :: rhgrd             = 0.98               !< fer_hires microphysics only
+    real(kind=kind_phys) :: rhgrd             = 1.0                !< fer_hires microphysics only; for 3-km domain
     logical              :: spec_adv          = .true.             !< Individual cloud species advected
+    integer              :: icloud            = 0                  !< cloud effect to the optical depth in radiation; this also controls the cloud fraction options
+                                                                   !<  3: with cloud effect from FA, and use cloud fraction option 3, based on Sundqvist et al. (1989)
 #endif
 !--- M-G microphysical parameters
     integer              :: fprcp             =  0                 !< no prognostic rain and snow (MG)
@@ -3031,6 +3043,9 @@ module GFS_typedefs
     logical              :: shinhong       = .false.                  !< flag for scale-aware Shinhong vertical turbulent mixing scheme
     logical              :: do_ysu         = .false.                  !< flag for YSU vertical turbulent mixing scheme
     logical              :: dspheat        = .false.                  !< flag for tke dissipative heating
+#ifdef CCPP
+    logical              :: hurr_pbl       = .false.                  !< flag for hurricane-specific options in PBL scheme
+#endif
     logical              :: lheatstrg      = .false.                  !< flag for canopy heat storage parameterization
     logical              :: cnvcld         = .false.
     logical              :: random_clds    = .false.                  !< flag controls whether clouds are random
@@ -3054,6 +3069,8 @@ module GFS_typedefs
                                                                       !<     1: updated version of satmedmf (as of May 2019)
     logical              :: do_deep        = .true.                   !< whether to do deep convection
 #ifdef CCPP
+    logical              :: hwrf_samfdeep     = .false.               !< flag for HWRF SAMF deepcnv scheme 
+    logical              :: hwrf_samfshal     = .false.               !< flag for HWRF SAMF shalcnv scheme 
     logical              :: do_mynnedmf       = .false.               !< flag for MYNN-EDMF
     logical              :: do_mynnsfclay     = .false.               !< flag for MYNN Surface Layer Scheme
     ! DH* TODO - move to MYNN namelist section
@@ -3069,6 +3086,9 @@ module GFS_typedefs
     integer              :: bl_mynn_cloudmix  = 1
     integer              :: bl_mynn_mixqt     = 0
     integer              :: icloud_bl         = 1
+    real(kind=kind_phys) :: var_ric           = 1.0
+    real(kind=kind_phys) :: coef_ric_l        = 0.16
+    real(kind=kind_phys) :: coef_ric_s        = 0.25
     ! *DH
     logical              :: do_myjsfc         = .false.               !< flag for MYJ surface layer scheme
     logical              :: do_myjpbl         = .false.               !< flag for MYJ PBL scheme
@@ -3280,8 +3300,10 @@ module GFS_typedefs
                                bl_mynn_cloudpdf, bl_mynn_edmf, bl_mynn_edmf_mom,            &
                                bl_mynn_edmf_tke, bl_mynn_edmf_part, bl_mynn_cloudmix,       &
                                bl_mynn_mixqt, icloud_bl, bl_mynn_tkeadvect, gwd_opt,        &
+                               var_ric, coef_ric_l, coef_ric_s, hurr_pbl,                   &
                                ! *DH
                                do_myjsfc, do_myjpbl,                                        &
+                               hwrf_samfdeep, hwrf_samfshal,                                &
 #endif
                                h2o_phys, pdfcld, shcnvcw, redrag, hybedmf, satmedmf,        &
                                shinhong, do_ysu, dspheat, lheatstrg, cnvcld,                &
@@ -3294,7 +3316,7 @@ module GFS_typedefs
                                prslrd0, ral_ts,  ldiag_ugwp, do_ugwp, do_tofd,              &
                           ! --- Ferrier-Aligo
 #ifdef CCPP
-                               spec_adv, rhgrd,                                             &
+                               spec_adv, rhgrd, icloud,                                     &
 #endif
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
@@ -3577,6 +3599,7 @@ module GFS_typedefs
 #ifdef CCPP
     Model%rhgrd            = rhgrd
     Model%spec_adv         = spec_adv
+    Model%icloud           = icloud
 #endif 
 
 !--- gfdl  MP parameters
@@ -3656,6 +3679,19 @@ module GFS_typedefs
     Model%shocaftcnv       = shocaftcnv
     Model%shoc_cld         = shoc_cld
 #ifdef CCPP
+!HWRF physics suite
+    if (hwrf_samfdeep .and. imfdeepcnv .ne. 2) then
+       write(*,*) 'Logic error: hwrf_samfdeep has to be used along with imfdeepcnv=2'
+       stop
+    end if
+    if (hwrf_samfshal .and. imfshalcnv .ne. 2) then
+       write(*,*) 'Logic error: hwrf_samfshal has to be used along with imfshalcnv=2'
+       stop
+    end if
+    Model%hwrf_samfdeep = hwrf_samfdeep
+    Model%hwrf_samfshal = hwrf_samfshal
+#endif
+#ifdef CCPP
     if (oz_phys .and. oz_phys_2015) then
        write(*,*) 'Logic error: can only use one ozone physics option (oz_phys or oz_phys_2015), not both. Exiting.'
        stop
@@ -3685,6 +3721,9 @@ module GFS_typedefs
     Model%shinhong          = shinhong
     Model%do_ysu            = do_ysu
     Model%dspheat           = dspheat
+#ifdef CCPP
+    Model%hurr_pbl          = hurr_pbl
+#endif
     Model%lheatstrg         = lheatstrg
     Model%cnvcld            = cnvcld
     Model%random_clds       = random_clds
@@ -3725,6 +3764,9 @@ module GFS_typedefs
     Model%bl_mynn_tkeadvect = bl_mynn_tkeadvect
     Model%grav_settling     = grav_settling
     Model%icloud_bl         = icloud_bl
+    Model%var_ric           = var_ric
+    Model%coef_ric_l        = coef_ric_l
+    Model%coef_ric_s        = coef_ric_s
     ! *DH
     Model%gwd_opt           = gwd_opt
     Model%do_myjsfc         = do_myjsfc
@@ -4280,11 +4322,15 @@ module GFS_typedefs
       print *,' Radiative heating calculated at',Model%levr, ' layers'
       if (Model%iovr_sw == 0) then
         print *,' random cloud overlap for Shortwave IOVR_SW=',Model%iovr_sw
+      elseif (Model%iovr_sw == 4) then
+        print *,'exponential cloud overlap for Shortwave IOVR_SW=',Model%iovr_lw
       else
         print *,' max-random cloud overlap for Shortwave IOVR_SW=',Model%iovr_sw
       endif
       if (Model%iovr_lw == 0) then
         print *,' random cloud overlap for Longwave IOVR_LW=',Model%iovr_lw
+      elseif (Model%iovr_lw == 4) then
+        print *,'exponential cloud overlap for Longwave IOVR_LW=',Model%iovr_lw
       else
         print *,' max-random cloud overlap for Longwave IOVR_LW=',Model%iovr_lw
       endif
@@ -4685,6 +4731,7 @@ module GFS_typedefs
         print *, ' Ferrier-Aligo microphysical parameters'
         print *, ' spec_adv          : ', Model%spec_adv
         print *, ' rhgrd             : ', Model%rhgrd
+        print *, ' icloud            : ', Model%icloud
         print *, ' '
       endif
 #endif
@@ -4778,6 +4825,10 @@ module GFS_typedefs
       print *, ' do_myjsfc         : ', Model%do_myjsfc
       print *, ' do_myjpbl         : ', Model%do_myjpbl
       print *, ' gwd_opt           : ', Model%gwd_opt
+      print *, ' hurr_pbl          : ', Model%hurr_pbl
+      print *, ' var_ric           : ', Model%var_ric
+      print *, ' coef_ric_l        : ', Model%coef_ric_l
+      print *, ' coef_ric_s        : ', Model%coef_ric_s
 #endif
       print *, ' '
       print *, 'Rayleigh friction'
