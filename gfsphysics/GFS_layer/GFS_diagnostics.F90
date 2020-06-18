@@ -3470,6 +3470,20 @@ module GFS_diagnostics
       enddo
     endif
 
+!mz FA 3D clouds
+    if (Model%imp_physics == 15) then
+      idx = idx + 1
+      ExtDiag(idx)%axes = 3                                                                                                                 
+      ExtDiag(idx)%name = 'CLDCOV'                                                                                                       
+      ExtDiag(idx)%desc = 'cloud fraction for radiation'                                                                                          
+      ExtDiag(idx)%unit = 'frac'                                                                                                            
+      ExtDiag(idx)%mod_name = 'gfs_phys'                                                                                                    
+      allocate (ExtDiag(idx)%data(nblks))                                                                                                   
+      do nb = 1,nblks                                                                                                                       
+        ExtDiag(idx)%data(nb)%var3 => Tbd(nb)%CLDCOV(:,:)                                                                                
+      enddo                         
+    endif
+
     if (Model%do_mynnedmf) then
       idx = idx + 1
       ExtDiag(idx)%axes = 3

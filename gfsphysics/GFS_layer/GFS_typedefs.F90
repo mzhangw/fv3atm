@@ -1274,6 +1274,10 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: prevsq (:,:)     => null()  !<
     integer,               pointer :: cactiv   (:)     => null()  !< convective activity memory contour
 
+    !mz
+    !--- FA MP 3D cloud fraction 
+    real (kind=kind_phys), pointer :: cldcov  (:,:)      => null()  !
+
     !--- MYNN prognostic variables that can't be in the Intdiag or Interstitial DDTs
     real (kind=kind_phys), pointer :: CLDFRA_BL  (:,:)   => null()  !
     real (kind=kind_phys), pointer :: QC_BL      (:,:)   => null()  !
@@ -5272,6 +5276,12 @@ module GFS_typedefs
        allocate(Tbd%cactiv(IM))
        Tbd%cactiv = zero
     end if
+
+!mz FA MP
+    if (Model%imp_physics == 15) then
+       allocate (Tbd%cldcov (IM,Model%levr+LTP))
+       Tbd%cldcov = clear_val
+    endif
 
     !--- MYNN variables:
     if (Model%do_mynnedmf) then

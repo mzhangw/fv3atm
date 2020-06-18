@@ -4659,6 +4659,13 @@
   units = none
   dimensions = (horizontal_dimension)
   type = integer
+[CLDCOV]
+  standard_name = cloud_fraction_for_radiation
+  long_name = cloud fraction for radiation scheme
+  units = frac
+  dimensions = (horizontal_dimension,adjusted_vertical_layer_dimension_for_radiation)
+  type = real
+  kind = kind_phys
 [CLDFRA_BL]
   standard_name = subgrid_cloud_fraction_pbl
   long_name = subgrid cloud fraction from PBL scheme
