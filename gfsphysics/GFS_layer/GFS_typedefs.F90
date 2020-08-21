@@ -826,7 +826,6 @@ module GFS_typedefs
 !--- flake model parameters
     integer              :: lkm             !< flag for flake model
 
-
 #ifdef CCPP    
     ! GFDL Surface Layer options
     logical              :: lcurr_sf  !flag for taking ocean currents into account in GFDL surface layer
@@ -1586,7 +1585,9 @@ module GFS_typedefs
 #ifdef CCPP
     real (kind=kind_phys), pointer :: TRAIN  (:,:)   => null()  !< accumulated stratiform T tendency (K s-1)
 #endif
-
+#ifdef CCPP
+    real (kind=kind_phys), pointer :: cldfra  (:,:)   => null()  !< instantaneous 3D cloud fraction
+#endif
     !--- MP quantities for 3D diagnositics 
     real (kind=kind_phys), pointer :: refl_10cm(:,:) => null()  !< instantaneous refl_10cm
 
@@ -1789,7 +1790,6 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: ep1d_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: ep1d_land(:)       => null()  !<
     real (kind=kind_phys), pointer      :: ep1d_ocean(:)      => null()  !<
-    real (kind=kind_phys), pointer      :: evap(:)            => null()  !<
     real (kind=kind_phys), pointer      :: evapq(:)           => null()  !<
     real (kind=kind_phys), pointer      :: evap_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: evap_land(:)       => null()  !<
@@ -1840,7 +1840,6 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: h2o_pres(:)        => null()  !<
     real (kind=kind_phys), pointer      :: hefac(:)           => null()  !<
     real (kind=kind_phys), pointer      :: hffac(:)           => null()  !<
-    real (kind=kind_phys), pointer      :: hflx(:)            => null()  !<
     real (kind=kind_phys), pointer      :: hflxq(:)           => null()  !<
     real (kind=kind_phys), pointer      :: hflx_ice(:)        => null()  !<
     real (kind=kind_phys), pointer      :: hflx_land(:)       => null()  !<
@@ -1918,7 +1917,6 @@ module GFS_typedefs
     real (kind=kind_phys), pointer      :: qlyr(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: qrn(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: qsnw(:,:)          => null()  !<
-    real (kind=kind_phys), pointer      :: qss(:)             => null()  !<
     real (kind=kind_phys), pointer      :: qss_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: qss_land(:)        => null()  !<
     real (kind=kind_phys), pointer      :: qss_ocean(:)       => null()  !<
@@ -3171,7 +3169,6 @@ module GFS_typedefs
 !--- flake model parameters
     integer              :: lkm            =  0  !< flag for flake model
 
-
 #ifdef CCPP
     logical              :: lcurr_sf       = .false.                  !< flag for taking ocean currents into account in GFDL surface layer
     logical              :: pert_cd        = .false.                  !< flag for perturbing the surface drag coefficient for momentum in surface layer scheme
@@ -3496,8 +3493,9 @@ module GFS_typedefs
                                ! DH* TODO - move to MYNN namelist section
                                bl_mynn_cloudpdf, bl_mynn_edmf, bl_mynn_edmf_mom,            &
                                bl_mynn_edmf_tke, bl_mynn_edmf_part, bl_mynn_cloudmix,       &
-                               bl_mynn_mixqt, icloud_bl, bl_mynn_tkeadvect, gwd_opt,        &
                                var_ric, coef_ric_l, coef_ric_s, hurr_pbl,                   &
+                               bl_mynn_mixqt, bl_mynn_output, icloud_bl, bl_mynn_tkeadvect, &
+                               gwd_opt,                                                     &
                                ! *DH
                                do_myjsfc, do_myjpbl,                                        &
                                hwrf_samfdeep, hwrf_samfshal,                                &
@@ -5105,7 +5103,6 @@ module GFS_typedefs
       print *, 'flake model parameters'
       print *, 'lkm                : ', Model%lkm
       print *, ' '
-
 #ifdef CCPP
       print *, ' lcurr_sf          : ', Model%lcurr_sf
       print *, ' pert_cd           : ', Model%pert_cd
@@ -5771,6 +5768,10 @@ module GFS_typedefs
     end if
 #endif
 
+#ifdef CCPP
+    allocate (Diag%cldfra     (IM,Model%levs))
+#endif
+
     allocate (Diag%ca_deep  (IM))
     allocate (Diag%ca_turb  (IM))
     allocate (Diag%ca_shal  (IM))
@@ -6091,6 +6092,10 @@ module GFS_typedefs
        Diag%TRAIN      = zero
     end if
 #endif
+#ifdef CCPP
+    Diag%cldfra      = zero
+#endif
+
     Diag%totprcpb   = zero
     Diag%cnvprcpb   = zero
     Diag%toticeb    = zero
@@ -6399,7 +6404,6 @@ module GFS_typedefs
     allocate (Interstitial%ep1d_ice        (IM))
     allocate (Interstitial%ep1d_land       (IM))
     allocate (Interstitial%ep1d_ocean      (IM))
-    allocate (Interstitial%evap            (IM))
     allocate (Interstitial%evapq           (IM))
     allocate (Interstitial%evap_ice        (IM))
     allocate (Interstitial%evap_land       (IM))
@@ -6445,7 +6449,6 @@ module GFS_typedefs
     allocate (Interstitial%h2o_pres        (levh2o))
     allocate (Interstitial%hefac           (IM))
     allocate (Interstitial%hffac           (IM))
-    allocate (Interstitial%hflx            (IM))
     allocate (Interstitial%hflxq           (IM))
     allocate (Interstitial%hflx_ice        (IM))
     allocate (Interstitial%hflx_land       (IM))
@@ -6478,7 +6481,6 @@ module GFS_typedefs
     allocate (Interstitial%prnum           (IM,Model%levs))
     allocate (Interstitial%qlyr            (IM,Model%levr+LTP))
     allocate (Interstitial%prcpmp          (IM))
-    allocate (Interstitial%qss             (IM))
     allocate (Interstitial%qss_ice         (IM))
     allocate (Interstitial%qss_land        (IM))
     allocate (Interstitial%qss_ocean       (IM))
@@ -7081,7 +7083,6 @@ module GFS_typedefs
     Interstitial%ep1d_ice        = huge
     Interstitial%ep1d_land       = huge
     Interstitial%ep1d_ocean      = huge
-    Interstitial%evap            = clear_val
     Interstitial%evapq           = clear_val
     Interstitial%evap_ice        = huge
     Interstitial%evap_land       = huge
@@ -7123,7 +7124,6 @@ module GFS_typedefs
     Interstitial%gwdcv           = clear_val
     Interstitial%hefac           = clear_val
     Interstitial%hffac           = clear_val
-    Interstitial%hflx            = clear_val
     Interstitial%hflxq           = clear_val
     Interstitial%hflx_ice        = huge
     Interstitial%hflx_land       = huge
@@ -7144,7 +7144,6 @@ module GFS_typedefs
     Interstitial%oc              = clear_val
     Interstitial%prcpmp          = clear_val
     Interstitial%prnum           = clear_val
-    Interstitial%qss             = clear_val
     Interstitial%qss_ice         = huge
     Interstitial%qss_land        = huge
     Interstitial%qss_ocean       = huge
@@ -7731,6 +7730,7 @@ module GFS_typedefs
        write (0,*) 'sum(Interstitial%cloud_overlap_param  ) = ', sum(Interstitial%cloud_overlap_param)
        write (0,*) 'sum(Interstitial%precip_overlap_param ) = ', sum(Interstitial%precip_overlap_param)
     end if
+
     write (0,*) 'Interstitial_print: end'
     !
   end subroutine interstitial_print

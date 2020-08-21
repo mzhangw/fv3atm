@@ -1324,6 +1324,13 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
+[hflx]
+  standard_name = kinematic_surface_upward_sensible_heat_flux
+  long_name = kinematic surface upward sensible heat flux
+  units = K m s-1
+  dimensions = (horizontal_dimension)
+  type = real
+  kind = kind_phys
 [qss]
   standard_name = surface_specific_humidity
   long_name = surface air saturation specific humidity
@@ -6155,6 +6162,11 @@
   long_name = diffusivity for momentum
   units = m2 s-1
   dimensions = (horizontal_dimension,vertical_dimension_minus_one)
+[cldfra]
+  standard_name = instantaneous_3d_cloud_fraction
+  long_name = instantaneous 3D cloud fraction for all MPs
+  units = frac
+  dimensions = (horizontal_dimension,vertical_dimension)
   type = real
   kind = kind_phys
 [ndust]
@@ -7722,13 +7734,6 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
-[hflx]
-  standard_name = kinematic_surface_upward_sensible_heat_flux
-  long_name = kinematic surface upward sensible heat flux
-  units = K m s-1
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
 [hflxq]
   standard_name = kinematic_surface_upward_sensible_heat_flux_reduced_by_surface_roughness
   long_name = kinematic surface upward sensible heat flux reduced by surface roughness
@@ -8372,6 +8377,11 @@
   long_name = surface runoff flux in m s-1
   units = m s-1
   dimensions = (horizontal_dimension)
+[save_q(:,:,index_for_ozone)]
+  standard_name = ozone_mixing_ratio_save
+  long_name = ozone mixing ratio before entering a physics scheme
+  units = kg kg-1
+  dimensions = (horizontal_dimension,vertical_dimension)
   type = real
   kind = kind_phys
 [save_q(:,:,index_for_liquid_cloud_condensate)]
