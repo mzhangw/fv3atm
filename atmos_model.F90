@@ -104,9 +104,7 @@ use IPD_driver,         only: IPD_initialize, IPD_initialize_rst, IPD_step
 use physics_abstraction_layer, only: time_vary_step, radiation_step1, physics_step1, physics_step2
 #endif
 
-use stochastic_physics, only: init_stochastic_physics,         &
-                              run_stochastic_physics
-use stochastic_physics_sfc, only: run_stochastic_physics_sfc
+use stochastic_physics_wrapper_mod, only: stochastic_physics_wrapper
 
 use FV3GFS_io_mod,      only: FV3GFS_restart_read, FV3GFS_restart_write, &
                               FV3GFS_IPD_checksum,                       &
@@ -307,31 +305,18 @@ subroutine update_atmos_radiation_physics (Atmos)
 #endif
 
 !--- call stochastic physics pattern generation / cellular automata
-    if (IPD_Control%do_sppt .OR. IPD_Control%do_shum .OR. IPD_Control%do_skeb .OR. IPD_Control%do_sfcperts) then
-       call run_stochastic_physics(IPD_Control, IPD_Data(:)%Grid, IPD_Data(:)%Coupling, nthrds)
-    end if
-
-    if(IPD_Control%do_ca)then
-       if(IPD_Control%ca_sgs)then
-          call cellular_automata_sgs(IPD_Control%kdt,IPD_Data(:)%Statein,IPD_Data(:)%Coupling,IPD_Data(:)%Intdiag,Atm_block%nblks,IPD_Control%levs, &
-            IPD_Control%nca,IPD_Control%ncells,IPD_Control%nlives,IPD_Control%nfracseed,&
-            IPD_Control%nseed,IPD_Control%nthresh,IPD_Control%ca_global,IPD_Control%ca_sgs,IPD_Control%iseed_ca,&
-            IPD_Control%ca_smooth,IPD_Control%nspinup,Atm_block%blksz(1))
-       endif
-       if(IPD_Control%ca_global)then
-          call cellular_automata_global(IPD_Control%kdt,IPD_Data(:)%Statein,IPD_Data(:)%Coupling,IPD_Data(:)%Intdiag,Atm_block%nblks,IPD_Control%levs, &
-            IPD_Control%nca_g,IPD_Control%ncells_g,IPD_Control%nlives_g,IPD_Control%nfracseed,&
-            IPD_Control%nseed_g,IPD_Control%nthresh,IPD_Control%ca_global,IPD_Control%ca_sgs,IPD_Control%iseed_ca,&
-            IPD_Control%ca_smooth,IPD_Control%nspinup,Atm_block%blksz(1),IPD_Control%nsmooth,IPD_Control%ca_amplitude)
-      endif
-    endif
+    call stochastic_physics_wrapper(IPD_Control, IPD_Data, Atm_block)
 
 !--- if coupled, assign coupled fields
       if( IPD_Control%cplflx .or. IPD_Control%cplwav ) then
-!        print *,'in atmos_model,nblks=',Atm_block%nblks
-!        print *,'in atmos_model,IPD_Data size=',size(IPD_Data)
-!        print *,'in atmos_model,tsfc(1)=',IPD_Data(1)%sfcprop%tsfc(1)
-!        print *,'in atmos_model, tsfc size=',size(IPD_Data(1)%sfcprop%tsfc)
+
+!       if (mpp_pe() == mpp_root_pe() .and. debug) then
+!          print *,'in atmos_model,nblks=',Atm_block%nblks
+!         print *,'in atmos_model,IPD_Data size=',size(IPD_Data)
+!         print *,'in atmos_model,tsfc(1)=',IPD_Data(1)%sfcprop%tsfc(1)
+!         print *,'in atmos_model, tsfc size=',size(IPD_Data(1)%sfcprop%tsfc)
+!       endif
+
         call assign_importdata(rc)
 !        print *,'in atmos_model, after assign_importdata, rc=',rc
       endif
@@ -466,7 +451,7 @@ subroutine atmos_model_init (Atmos, Time_init, Time, Time_step)
   integer              :: bdat(8), cdat(8)
   integer              :: ntracers, maxhf, maxh
   character(len=32), allocatable, target :: tracer_names(:)
-  integer :: nthrds
+  integer :: nthrds, nb
 
 !-----------------------------------------------------------------------
 
@@ -627,55 +612,10 @@ subroutine atmos_model_init (Atmos, Time_init, Time, Time_step)
    call IPD_initialize (IPD_Control, IPD_Data, IPD_Diag, IPD_Restart, Init_parm)
 #endif
 
-   if (IPD_Control%do_sppt .OR. IPD_Control%do_shum .OR. IPD_Control%do_skeb .OR. IPD_Control%do_sfcperts) then
-      ! Initialize stochastic physics
-      call init_stochastic_physics(IPD_Control, Init_parm, mpp_npes(), nthrds)
-      if(IPD_Control%me == IPD_Control%master) print *,'do_skeb=',IPD_Control%do_skeb
-   end if
-
-#ifdef CCPP
-   ! Initialize the CCPP framework
-   call CCPP_step (step="init", nblks=Atm_block%nblks, ierr=ierr)
-   if (ierr/=0)  call mpp_error(FATAL, 'Call to CCPP init step failed')
-   ! Doing the init here requires logic in thompson aerosol init if no aerosol
-   ! profiles are specified and internal profiles are calculated, because these
-   ! require temperature/geopotential etc which are not yet set. Sim. for RUC LSM.
-   call CCPP_step (step="physics_init", nblks=Atm_block%nblks, ierr=ierr)
-   if (ierr/=0)  call mpp_error(FATAL, 'Call to CCPP physics_init step failed')
-#endif
+!--- Initialize stochastic physics pattern generation / cellular automata for first time step
+   call stochastic_physics_wrapper(IPD_Control, IPD_Data, Atm_block)
 
    Atmos%Diag => IPD_Diag
-
-   if (IPD_Control%do_sfcperts) then
-      ! Get land surface perturbations here (move to GFS_time_vary
-      ! step if wanting to update each time-step)
-      call run_stochastic_physics_sfc(IPD_Control, IPD_Data(:)%Grid, IPD_Data(:)%Coupling)
-   end if
-
-   ! Initialize cellular automata
-   if(IPD_Control%do_ca)then
-      ! DH* The current implementation of cellular_automata assumes that all blocksizes are the
-      ! same - abort if this is not the case, otherwise proceed with Atm_block%blksz(1) below
-      if (.not. minval(Atm_block%blksz)==maxval(Atm_block%blksz)) then
-         call mpp_error(FATAL, 'Logic errror: cellular_automata not compatible with non-uniform blocksizes')
-      end if
-      ! *DH
-      if(IPD_Control%do_ca)then
-       if(IPD_Control%ca_sgs)then
-          call cellular_automata_sgs(IPD_Control%kdt,IPD_Data(:)%Statein,IPD_Data(:)%Coupling,IPD_Data(:)%Intdiag,Atm_block%nblks,IPD_Control%levs, &
-            IPD_Control%nca,IPD_Control%ncells,IPD_Control%nlives,IPD_Control%nfracseed,&
-            IPD_Control%nseed,IPD_Control%nthresh,IPD_Control%ca_global,IPD_Control%ca_sgs,IPD_Control%iseed_ca,&
-            IPD_Control%ca_smooth,IPD_Control%nspinup,Atm_block%blksz(1))
-       endif
-       if(IPD_Control%ca_global)then
-          call cellular_automata_global(IPD_Control%kdt,IPD_Data(:)%Statein,IPD_Data(:)%Coupling,IPD_Data(:)%Intdiag,Atm_block%nblks,IPD_Control%levs, &
-            IPD_Control%nca_g,IPD_Control%ncells_g,IPD_Control%nlives_g,IPD_Control%nfracseed,&
-            IPD_Control%nseed_g,IPD_Control%nthresh,IPD_Control%ca_global,IPD_Control%ca_sgs,IPD_Control%iseed_ca,&
-            IPD_Control%ca_smooth,IPD_Control%nspinup,Atm_block%blksz(1),IPD_Control%nsmooth,IPD_Control%ca_amplitude)
-       endif
-
-    endif
-   endif
 
    Atm(mygrid)%flagstruct%do_skeb = IPD_Control%do_skeb
 
@@ -702,6 +642,19 @@ subroutine atmos_model_init (Atmos, Time_init, Time, Time_step)
 #else
    call FV3GFS_restart_read (IPD_Data, IPD_Restart, Atm_block, IPD_Control, Atmos%domain)
 #endif
+
+   ! Populate the IPD_Data%Statein container with the prognostic state
+   ! in Atm_block, which contains the initial conditions/restart data.
+   call atmos_phys_driver_statein (IPD_data, Atm_block, flip_vc)
+
+#ifdef CCPP
+   ! Initialize the CCPP framework
+   call CCPP_step (step="init", nblks=Atm_block%nblks, ierr=ierr)
+   if (ierr/=0)  call mpp_error(FATAL, 'Call to CCPP init step failed')
+   ! Initialize the CCPP physics
+   call CCPP_step (step="physics_init", nblks=Atm_block%nblks, ierr=ierr)
+   if (ierr/=0)  call mpp_error(FATAL, 'Call to CCPP physics_init step failed')
+#endif    
 
    !--- set the initial diagnostic timestamp
    diag_time = Time 
@@ -908,7 +861,7 @@ subroutine update_atmos_model_state (Atmos)
       if (mpp_pe() == mpp_root_pe()) write(6,*) ' gfs diags time since last bucket empty: ',time_int/3600.,'hrs'
       call atmosphere_nggps_diag(Atmos%Time)
       call FV3GFS_diag_output(Atmos%Time, IPD_DIag, Atm_block, IPD_Control%nx, IPD_Control%ny, &
-                            IPD_Control%levs, 1, 1, 1.d0, time_int, time_intfull,              &
+                            IPD_Control%levs, 1, 1, 1.0_IPD_kind_phys, time_int, time_intfull,              &
                             IPD_Control%fhswr, IPD_Control%fhlwr)
       if (nint(IPD_Control%fhzero) > 0) then 
         if (mod(isec,3600*nint(IPD_Control%fhzero)) == 0) diag_time = Atmos%Time
