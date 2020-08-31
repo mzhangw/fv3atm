@@ -250,7 +250,7 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: fice   (:)   => null()  !< ice fraction over open water grid
 !   real (kind=kind_phys), pointer :: hprim  (:)   => null()  !< topographic standard deviation in m
     real (kind=kind_phys), pointer :: hprime (:,:) => null()  !< orographic metrics
-    real (kind=kind_phys), pointer :: z0base (:)   => null()  !< background or baseline surface roughness length in m
+!    real (kind=kind_phys), pointer :: z0base (:)   => null()  !< background or baseline surface roughness length in m
     real (kind=kind_phys), pointer :: semisbase(:) => null()  !< background surface emissivity
 
 !--- In (radiation only)
@@ -1584,12 +1584,13 @@ module GFS_typedefs
 !--- F-A MP scheme
 #ifdef CCPP
     real (kind=kind_phys), pointer :: TRAIN  (:,:)   => null()  !< accumulated stratiform T tendency (K s-1)
-#endif
-#ifdef CCPP
     real (kind=kind_phys), pointer :: cldfra  (:,:)   => null()  !< instantaneous 3D cloud fraction
 #endif
     !--- MP quantities for 3D diagnositics 
     real (kind=kind_phys), pointer :: refl_10cm(:,:) => null()  !< instantaneous refl_10cm 
+
+    !--- Extra PBL diagnostics
+    real (kind=kind_phys), pointer :: dkudiagnostic(:,:) => null()  !< Eddy diffusitivity from the EDMF and EDMF-TKE
 !
 !---vay-2018 UGWP-diagnostics daily mean
 !
@@ -2564,10 +2565,10 @@ module GFS_typedefs
       Sfcprop%snotime = clear_val
     end if
     
-    if (Model%do_myjsfc.or.Model%do_myjpbl.or.(Model%lsm == Model%lsm_noah_wrfv4)) then
-      allocate(Sfcprop%z0base(IM))
-      Sfcprop%z0base = clear_val
-    end if
+!    if (Model%do_myjsfc.or.Model%do_myjpbl.or.(Model%lsm == Model%lsm_noah_wrfv4)) then
+!      allocate(Tbd%phy_myj_z0base (IM))
+!      Tbd%phy_myj_z0base  = clear_val
+!    end if
     if (Model%lsm == Model%lsm_noah_wrfv4) then
       allocate(Sfcprop%semisbase(IM))
       Sfcprop%semisbase = clear_val
@@ -5543,7 +5544,7 @@ module GFS_typedefs
        allocate (Tbd%phy_myj_qz0    (IM)) 
        allocate (Tbd%phy_myj_uz0    (IM)) 
        allocate (Tbd%phy_myj_vz0    (IM)) 
-       allocate (Tbd%phy_myj_z0base (IM)) 
+!       allocate (Tbd%phy_myj_z0base (IM)) 
        allocate (Tbd%phy_myj_akhs   (IM)) 
        allocate (Tbd%phy_myj_akms   (IM)) 
        allocate (Tbd%phy_myj_chkqlm (IM)) 
@@ -5557,7 +5558,7 @@ module GFS_typedefs
        Tbd%phy_myj_qz0    = clear_val 
        Tbd%phy_myj_uz0    = clear_val 
        Tbd%phy_myj_vz0    = clear_val 
-       Tbd%phy_myj_z0base = clear_val 
+!       Tbd%phy_myj_z0base = clear_val 
        Tbd%phy_myj_akhs   = clear_val 
        Tbd%phy_myj_akms   = clear_val 
        Tbd%phy_myj_chkqlm = clear_val 
@@ -5566,6 +5567,12 @@ module GFS_typedefs
        Tbd%phy_myj_a1t    = clear_val 
        Tbd%phy_myj_a1q    = clear_val 
     end if
+
+    if (Model%do_myjsfc.or.Model%do_myjpbl.or.(Model%lsm ==    Model%lsm_noah_wrfv4)) then
+      allocate(Tbd%phy_myj_z0base (IM))
+      Tbd%phy_myj_z0base  = clear_val
+    end if
+
 #endif
 
   end subroutine tbd_create
@@ -5861,6 +5868,9 @@ module GFS_typedefs
 
     !--- 3D diagnostics for Thompson MP / GFDL MP
     allocate (Diag%refl_10cm(IM,Model%levs))
+
+    !--- New PBL Diagnostics
+    allocate (Diag%dkudiagnostic(IM,Model%levs))
 
     !--  New max hourly diag.
     allocate (Diag%refdmax(IM))
@@ -6183,6 +6193,9 @@ module GFS_typedefs
       Diag%gwp_okw    = zero
     endif
 !-----------------------------
+
+! Extra PBL diagnostics
+    Diag%dkudiagnostic  = zero
 
 ! max hourly diagnostics
     Diag%refl_10cm   = zero

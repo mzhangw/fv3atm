@@ -575,13 +575,6 @@
   dimensions = (horizontal_dimension)
   type = real
   kind = kind_phys
-[z0base]
-  standard_name = baseline_surface_roughness_length
-  long_name = baseline surface roughness length for momentum in meter
-  units = m
-  dimensions = (horizontal_dimension)
-  type = real
-  kind = kind_phys
 [semisbase]
   standard_name = baseline_surface_longwave_emissivity
   long_name = baseline surface lw emissivity in fraction
@@ -6162,6 +6155,13 @@
   long_name = instantaneous refl_10cm
   units = dBZ
   dimensions = (horizontal_dimension,vertical_dimension)
+  type = real
+  kind = kind_phys
+[dkudiagnostic]
+  standard_name = atmosphere_momentum_diffusivity
+  long_name = diffusivity for momentum
+  units = m2 s-1
+  dimensions = (horizontal_dimension,vertical_dimension_minus_one)
   type = real
   kind = kind_phys
 [cldfra]
